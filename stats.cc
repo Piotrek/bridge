@@ -5,27 +5,32 @@
 
 
 void Stats::resetStats () {
-  playouts_num = 0.0;
-  playouts_score = 0.0;
-  square_playouts_score = 0.0;
+  playoutsNum = 0.0;
+  playoutsScore = 0.0;
+  squarePlayoutsScore = 0.0;
   ucb = 100.0;
 }
 
 void Stats::update (float playout) {
-  playouts_num += 1.0;
-  playouts_score += playout;
-  square_playouts_score += playout * playout;
+  playoutsNum += 1.0;
+  playoutsScore += playout;
+  squarePlayoutsScore += playout * playout;
 }
 
 float Stats::mean () {
-  return playouts_score / playouts_num;
+  return playoutsScore / playoutsNum;
 }
 
 float Stats::variance () {
   float m = mean();
-  return square_playouts_score / playouts_num - m * m;
+  return squarePlayoutsScore / playoutsNum - m * m;
 }
 
-void Stats::updateUcb (float coeff) {
-  ucb = mean() + coeff / sqrt(playouts_num);
+float Stats::updateUcb (float coeff) {
+  ucb = mean() + sqrt(log(coeff) / playoutsNum);
+	return ucb;
+}
+
+float Stats::playNum () {
+	return playoutsNum;
 }

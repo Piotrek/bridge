@@ -5,25 +5,26 @@ class Stats {
 
 private:
   
-  float playouts_num;
-  float playouts_score;
-  float square_playouts_score;
+  float playoutsNum;
+  float playoutsScore;
+  float squarePlayoutsScore;
   float ucb;
 
 public:
 
   Stats () {
-    playouts_num = 0.0;
-    playouts_score = 0.0;
-    square_playouts_score = 0.0;
+    playoutsNum = 0.0;
+    playoutsScore = 0.0;
+    squarePlayoutsScore = 0.0;
     ucb = 100.0;
   }
   
+	float playNum();
   void resetStats ();
   void update (float playout);
   float mean ();
   float variance ();
-  void updateUcb (float coeff);
+  float updateUcb (float coeff);
   
 };
 

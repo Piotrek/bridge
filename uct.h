@@ -2,29 +2,46 @@
 #define __UCT_H__
 
 #include <list>
+#include <vector>
 
 #include "stats.h"
 
  
 class UctNode {
   typedef std::list<UctNode> ChildrenList;
-  
-  public:
+
+	private:
+    int player;
+    ChildrenList children;
+    Stats playoutsStats;
+    bool expand;  
+
+	public:
     UctNode (int _player) {
       player = _player;
+			children = ChildrenList();
       expand = false;
     };
     
     void addChild (UctNode& node);
     void updateStats (float playout);
-    void updateUcb (float coeff);
+    float updateUcb (float coeff);
     UctNode selectBestChild ();
-    
-  private:
-    int player;
-    ChildrenList children;
-    Stats playouts_stats;
-    bool expand;
+		bool expanded();
 };
 
+
+//-----------------------------------
+
+class UctTree {
+	
+	private:
+		std::vector<UctNode> moves;
+		UctNode root;
+		
+	public:
+		UctTree (int _player) : root(_player) {};
+		UctNode selectBestMove();
+	
+};
 #endif
