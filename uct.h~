@@ -25,7 +25,7 @@ class UctNode {
     
     void addChild (UctNode& node);
     void updateStats (float playout);
-    void updateUcb (float coeff);
+    float updateUcb (float coeff);
     UctNode selectBestChild ();
 		bool expanded();
 };

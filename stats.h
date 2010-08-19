@@ -1,6 +1,9 @@
 #ifndef __STATS_H_
 #define __STATS_H_
 
+#define STALA_UCB 1.0
+#define START_UCB 100.0
+
 class Stats {
 
 private:
@@ -19,12 +22,12 @@ public:
     ucb = 100.0;
   }
   
-	float playNum();
+  float playNum();
   void resetStats ();
-  void update (float playout);
+  void update (float playoutScore);
   float mean ();
   float variance ();
-  float updateUcb (float coeff);
+  float updateUcb (float allPlayouts);
   
 };
 

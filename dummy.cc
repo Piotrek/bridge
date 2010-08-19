@@ -17,7 +17,7 @@ vector<vector< set<int> > > players;
 
 MyRandom a = MyRandom(time(NULL));
 
-int whoWon(int* card) {
+int whoWon (int* card) {
   int ret = 0;
   for (int j = 1; j < 4; j++)
     if ((card[j]/13 == card[ret]/13) && (card[j] > card[ret]))
