@@ -11,7 +11,6 @@
  
 class UctNode {
   typedef std::list<UctNode> ChildrenList;
-
   private:
     int player;
     int card;
@@ -54,3 +53,4 @@ class UctTree {
     void exploreTree();
 };
 #endif
+

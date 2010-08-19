@@ -19,11 +19,12 @@ public:
     ucb = 100.0;
   }
   
+	float playNum();
   void resetStats ();
   void update (float playout);
   float mean ();
   float variance ();
-  void updateUcb ();
+  float updateUcb (float coeff);
   
 };
 
