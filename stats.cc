@@ -5,27 +5,33 @@
 
 
 void Stats::resetStats () {
-  playouts_num = 0.0;
-  playouts_score = 0.0;
-  square_playouts_score = 0.0;
-  ucb = 100.0;
+  playoutsNum = 0.0;
+  playoutsScore = 0.0;
+  squarePlayoutsScore = 0.0;
+  ucb = START_UCB;
 }
 
-void Stats::update (float playout) {
-  playouts_num += 1.0;
-  playouts_score += playout;
-  square_playouts_score += playout * playout;
+void Stats::update (float playoutScore) {
+  playoutsNum += 1.0;
+  playoutsScore += playoutScore;
+  squarePlayoutsScore += playoutScore * playoutScore;
 }
 
 float Stats::mean () {
-  return playouts_score / playouts_num;
+  return playoutsScore / playoutsNum;
 }
 
 float Stats::variance () {
   float m = mean();
-  return square_playouts_score / playouts_num - m * m;
+  return squarePlayoutsScore / playoutsNum - m * m;
 }
 
-void Stats::updateUcb (float coeff) {
-  ucb = mean() + coeff / sqrt(playouts_num);
+float Stats::updateUcb (float allPlayouts) {
+  //tu mozna wstawic jakas stala przed pierwiastkiem
+  ucb = mean() + STALA_UCB * sqrt(log(allPlayouts) / playoutsNum);
+  return ucb;
+}
+
+float Stats::playNum () {
+  return playoutsNum;
 }
