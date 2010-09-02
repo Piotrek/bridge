@@ -5,78 +5,62 @@
 #include <set>
 
 #include "uct.h"
+#include "utils.h"
+#include "dummyplayer.h"
 
 using namespace std;
 
-int changeCardToNumber (char *c) {
-  int num = 0;
-
-  if ((c[0] == 'D') || (c[0] == 'd')) num += 13;
-  if ((c[0] == 'H') || (c[0] == 'h')) num += 26;
-  if ((c[0] == 'S') || (c[0] == 's')) num += 39;
-
-  if ((c[1] > '1') && (c[1] <= '9')) num = num + c[1] - '2';
-  if (c[1] == 'T') num += 8;
-  if (c[1] == 'J') num += 9;
-  if (c[1] == 'Q') num += 10;
-  if (c[1] == 'K') num += 11;
-  if (c[1] == 'A') num += 12;
-
-  return num;
-}
-
-char* changeNumberToCard (int num, char* c) {
-  int suit, value;
-
-  suit = num / 13;
-  value = num % 13;
-
-  if (suit == 0) c[0] = 'C';
-  if (suit == 1) c[0] = 'D';
-  if (suit == 2) c[0] = 'H';
-  if (suit == 3) c[0] = 'S';
-
-  if (value < 8) c[1] = '2' + value;
-  if (value == 8) c[1] = 'T'; 
-  if (value == 9) c[1] = 'J'; 
-  if (value == 10) c[1] = 'Q'; 
-  if (value == 11) c[1] = 'K'; 
-  if (value == 12) c[1] = 'A';
-  
-  c[2]=0;
-  
-  return c; 
-}
+MyRandom Dummyplayer::a = MyRandom(time(NULL));
 
 
 int main()
-{	
+{
   set < int > dummyCards, declarerCards, defendersCards;
-  vector < set < int > > cards;
-  int count;
+  vector < vector < set < int > > > cards;
+  int count, suit = H, level = -1, cit = 0;
+  int num;
+  Trick tr;
   
-  cards.resize(3);
+  cards.resize(4);
+  for (int i = 0; i < 4; i++)
+    cards[i].resize(4);
   while (true) {
     char cmd[16];
     scanf("%s", cmd);
     if (!strcmp(cmd, "set_dummy_cards")) {
-      dummyCards.clear();
       for (int i = 0; i < count; i++) {
         char buf[4];
         scanf("%s", buf);
-        dummyCards.insert(changeCardToNumber(buf));
+        num = changeCardToNumber(buf);
+        cards[N][num / 13].insert(num);
       }
-      cards[0] = dummyCards;
       printf("=\n\n");
     } 
     else if (!strcmp(cmd, "set_declarer_cards")) {
-      declarerCards.clear();
       for (int i = 0; i < count; i++) {
         char buf[4];
         scanf("%s", buf);
-        declarerCards.insert(changeCardToNumber(buf));
+        num = changeCardToNumber(buf);
+        cards[S][num / 13].insert(num);
       }
-      cards[2] = declarerCards;
+      printf("=\n\n");
+    }
+    else if (!strcmp(cmd, "set_east_cards")) {
+      for (int i = 0; i < count; i++) {
+        char buf[4];
+        scanf("%s", buf);
+        num = changeCardToNumber(buf);
+        cards[E][num / 13].insert(num);
+      }
+      printf("=\n\n");
+    }
+    else if (!strcmp(cmd, "set_west_cards")) {
+      for (int i = 0; i < count; i++) {
+        char buf[4];
+        scanf("%s", buf);
+        num = changeCardToNumber(buf);
+        cards[W][num / 13].insert(num);
+      }
       printf("=\n\n");
     }
     else if (!strcmp(cmd, "set_defenders_cards")) {
@@ -86,7 +70,7 @@ int main()
         scanf("%s", buf);
         defendersCards.insert(changeCardToNumber(buf));
       }
-      cards[1] = defendersCards;
+      //cards[1] = defendersCards;
       printf("=\n\n");
     }
     else if (!strcmp(cmd, "auto_set_defenders_cards")) {
@@ -104,14 +88,17 @@ int main()
         if (possibleCards[i] != 1)
           defendersCards.insert(i);
       }
-      cards[1] = defendersCards;
+      //cards[1] = defendersCards;
       printf("=\n\n");
     } // TODO
     else if (!strcmp(cmd, "gen_move")) {
       char c[2];
       int card;
-      UctTree tree = UctTree(0, dummyCards, declarerCards); //TODO
-      card = tree.genMove().getCard();
+      printf("w gen_move\n");
+      Deal newDeal(cards, tr, suit, level, 0, 3, cit);
+      printf("stworzono deal\n");
+      UctTree tree = UctTree(1, newDeal); //TODO
+      card = tree.genMove()->getCard();
       printf("%s ", changeNumberToCard(card,c));
       printf("\n");
     } // TODO
@@ -130,6 +117,20 @@ int main()
     }
     else if (!strcmp(cmd, "set_board_size")) {
       scanf("%d", &count);
+      printf("\n");
+    }
+    else if (!strcmp(cmd, "set_contract")) {
+      char cont[4];
+      scanf("%s", cont);
+      level = cont[0] - '0';
+      switch (cont[1]) {
+        case 'C' : suit = C; break;
+        case 'D' : suit = D; break;
+        case 'H' : suit = H; break;
+        case 'S' : suit = Sp; break;
+        case 'N' : suit = NT; break;
+        default : break;
+      }
       printf("\n");
     } 
     else if (!strcmp(cmd, "print_dummy_cards")) {

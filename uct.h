@@ -1,30 +1,37 @@
 #ifndef __UCT_H__
 #define __UCT_H__
 
+#include <cstdio>
 #include <list>
 #include <vector>
 #include <set>
 
+#include "deal.h"
+#include "dummyplayer.h"
 #include "stats.h"
+#include "utils.h"
 
 #define MOVES_BEFORE_EXPAND 100
+#define DEBUG 0
  
 class UctNode {
   typedef std::list<UctNode> ChildrenList;
 
   private:
     int player;
-    int card;
     ChildrenList children;
+    bool expand;
+    bool last;
+    Deal deal;
     Stats playoutsStats;
-    bool expand;  
 
   public:
-    UctNode (int _player, int _card) {
+    UctNode (int _player, Deal _deal) {
       player = _player;
-      card = _card;
       children = ChildrenList();
       expand = false;
+      deal = _deal;
+      last = false;
     };
     
     void addChild (UctNode& node);
@@ -33,8 +40,15 @@ class UctNode {
     int getCard();
     float playNum ();
     float updateUcb (float allPlayouts);
-    UctNode selectBestChild ();
+    UctNode* selectUCBChild ();
+    UctNode* selectBestChild ();
     bool expanded();
+    bool isLast();
+    void setLast();
+    Deal getDeal();
+    int getPlayer() { return player; };
+    float statsMean();
+    void printNode(int depth);
 };
 
 
@@ -43,14 +57,15 @@ class UctNode {
 class UctTree {
   
   private:
-    std::vector<UctNode> movesHistory;
+    std::vector < UctNode* > movesHistory;
     UctNode root;
     
   public:
-    UctTree (int _player) : root(_player,0) {};
-    UctTree (int _player, std::set<int> set1, std::set<int> set2) : root(_player,0) {};
-    UctNode selectBestMove();
-    UctNode genMove();
+    UctTree (int _player, Deal _deal) : root(_player, _deal) { root.addChildren(); };
+    UctTree (int _player, std::set<int> set1, std::set<int> set2, Deal _deal) : root(_player, _deal) {};
+    UctNode* selectBestMove();
+    UctNode* genMove();
     void exploreTree();
+    void printTree();
 };
 #endif

@@ -1,46 +1,61 @@
 #ifndef __DEAL_H__
 #define __DEAL_H__
 
+#include <cstdio>
 #include <vector>
 #include <set>
+#include "utils.h"
+
+class Trick
+{
+  private:
+    std::vector < int > cards;
+  public:
+    Trick() { cards.resize(4); };
+    int whoWon(int trump);
+    void playCard(int card, int player);
+    int firstCard();
+    int getCard(int i);
+    void printTrick();
+};
 
 class Deal
 {
   private:
-    std::vector < int > currentTrick;
-    std::set < int > dummyCards;
-    std::set < int > declarerCards;
-    std::set < int > eastCards;
-    std::set < int > westCards;
-    int numEastCards;
-    int numWestCards;
+    Trick currentTrick;
+    std::vector < std::vector < std::set < int > > > cards;
     int wonTricks;
     int contractSuit;
-    int contractLevel;      
+    int contractLevel;
+    int playerNow;
+    int cardsInTrick;
     
   public:
-    Deal(std::set<int> _dummy, std::set<int> _declarer, std::set<int> _defenders, std::vector<int> _trick, int _suit, int _level) {
-      dummyCards = _dummy;
-      declarerCards = _declarer;
-      eastCards = _defenders;
-      westCards = _defenders;
+    Deal() {};
+    Deal(std::vector < std::vector < std::set < int > > > _cards, Trick _trick, int _suit, int _level, int _won, int _who, int _cit) {
+      cards = _cards;
       currentTrick = _trick;
       contractSuit = _suit;
       contractLevel = _level;
-      wonTricks = 0;
+      wonTricks = _won;
+      playerNow = _who % 4;
+      cardsInTrick = _cit;
     };
     int getWonTricks();
     int getContractSuit();
     int getContractLevel();
-    int getNumEastCards();
-    int getNumWestCards();
-    std::vector < int > getCurrentTrick();
-    std::set < int > getDummyCards();
-    std::set < int > getDeclarerCards();
-    std::set < int > getEastCards();
-    std::set < int > getWestCards();
-    void decEastCards();
-    void decWestCards();
+    Trick getCurrentTrick();
+    std::vector < std::vector < std::set < int > > > getCards();
+    std::vector < std::set < int > > getDummyCards();
+    std::vector < std::set < int > > getDeclarerCards();
+    std::vector < std::set < int > > getEastCards();
+    std::vector < std::set < int > > getWestCards();
+    int whoNow();
+    int getCardsInTrick();
+    int suitOfTrick();
+    void incWonTricks();
+    int getLastCard();
+    void printDeal();
 };
 
 #endif // __DEAL_H__

@@ -1,26 +1,12 @@
-#include <cstdio>
-#include <cstdlib>
-#include <iostream>
-
 #include "dummyplayer.h"
-#include "myrandom.h"
 
-
-//TODO: dorobic gre w kolor
-int Dummyplayer::whoWon (int* card) {
-  int ret = 0;
-  for (int j = 1; j < 4; j++)
-    if ((card[j]/13 == card[ret]/13) && (card[j] > card[ret]))
-      ret = j;
-  return ret;
-}
 
 int Dummyplayer::playCard1 (int who) {
   int s[4], set_num, ret;
-  s[0] = players[who][0].size();
-  s[1] = players[who][1].size();
-  s[2] = players[who][2].size();
-  s[3] = players[who][3].size();
+  s[0] = cards[who][0].size();
+  s[1] = cards[who][1].size();
+  s[2] = cards[who][2].size();
+  s[3] = cards[who][3].size();
   int card = a.getRandomUint(s[0] + s[1] + s[2] + s[3]);
 
   std::set < int >::iterator iter;
@@ -29,10 +15,10 @@ int Dummyplayer::playCard1 (int who) {
     card -= s[set_num];
     set_num++;
   }
-  iter = players[who][set_num].begin();
+  iter = cards[who][set_num].begin();
   for (; card > 0; card--) iter++;
   ret = *(iter);
-  players[who][set_num].erase(iter);
+  cards[who][set_num].erase(iter);
   return ret;
 }
 
@@ -40,12 +26,12 @@ int Dummyplayer::playCard2(int who, int c1) {
   int suit = c1 / 13, index, ret;
   std::set<int>::iterator iter;
 
-  if (!players[who][suit].empty()) { /* player has a card in this suit */
-    index = a.getRandomUint(players[who][suit].size());
-    iter = players[who][suit].begin();
+  if (!cards[who][suit].empty()) { /* player has a card in this suit */
+    index = a.getRandomUint(cards[who][suit].size());
+    iter = cards[who][suit].begin();
     for (; index > 0; index--) iter++;
     ret = *(iter);
-    players[who][suit].erase(iter);
+    cards[who][suit].erase(iter);
     return ret;
   }
 
@@ -60,17 +46,181 @@ int Dummyplayer::playCard3(int who, int c1, int c2) { return 0; }
 int Dummyplayer::playCard4(int who, int c1, int c2, int c3) { return 0; }
 
 //TODO
-float Dummyplayer::play_randomly() {
-  int card[4];
-  int lastWinner = 0;
-
-  for (int trick = 1; trick <= 13; trick++) {
-    card[0] = playCard1(lastWinner);
-    card[1] = playCard2((lastWinner + 1) % 4, card[0]);
-    card[2] = playCard2((lastWinner + 2) % 4, card[0]);
-    card[3] = playCard2((lastWinner + 3) % 4, card[0]);
-    lastWinner = (lastWinner + whoWon(card)) % 4;
+int Dummyplayer::play_randomly(int tricksWon, int lastWinner) {
+  
+  if (cardsInTrick > 0) {
+    if (cardsInTrick == 1) {
+      currentTrick.playCard(playCard2((lastWinner + 1) % 4, currentTrick.firstCard()), 1);
+    }
+    if (cardsInTrick <= 2) {
+      currentTrick.playCard(playCard2((lastWinner + 2) % 4, currentTrick.firstCard()), 2);
+    }
+    if (cardsInTrick <= 3) {
+      currentTrick.playCard(playCard2((lastWinner + 3) % 4, currentTrick.firstCard()), 3);
+    }
+    lastWinner = (lastWinner + currentTrick.whoWon(contractSuit)) % 4;
+    tricksWon += (lastWinner % 2);
   }
-  return 1.0;
+    
+  while (!(cards[N][C].empty() && cards[N][D].empty() && cards[N][H].empty() && cards[N][Sp].empty())) {
+    currentTrick.playCard(playCard1(lastWinner), 0);
+    currentTrick.playCard(playCard2((lastWinner + 1) % 4, currentTrick.firstCard()), 1);
+    currentTrick.playCard(playCard2((lastWinner + 2) % 4, currentTrick.firstCard()), 2);
+    currentTrick.playCard(playCard2((lastWinner + 3) % 4, currentTrick.firstCard()), 3);
+    lastWinner = (lastWinner + currentTrick.whoWon(contractSuit)) % 4;
+    tricksWon += (lastWinner % 2);
+    //currentTrick.printTrick();
+  }
+  
+  return tricksWon;
+}
 
+
+int Betterplayer::playCard1 (int who) {
+  int s[4], set_num, ret;
+  s[0] = cards[who][0].size();
+  s[1] = cards[who][1].size();
+  s[2] = cards[who][2].size();
+  s[3] = cards[who][3].size();
+  int card = a.getRandomUint(s[0] + s[1] + s[2] + s[3]);
+
+  std::set < int >::iterator iter;
+  set_num = 0;
+  while (card >= s[set_num]) {
+    card -= s[set_num];
+    set_num++;
+  }
+  iter = cards[who][set_num].begin();
+  for (; card > 0; card--) iter++;
+  ret = *(iter);
+  cards[who][set_num].erase(iter);
+  return ret;
+}
+
+int Betterplayer::playCard2(int who, int c1) {
+  int suit = c1 / 13, index, ret;
+  std::set<int>::iterator iter;
+
+  if (!cards[who][suit].empty()) { /* player has a card in this suit */
+    index = a.getRandomUint(cards[who][suit].size()*2);
+    iter = cards[who][suit].begin();
+    if (index < cards[who][suit].size()) /* with prob 50% we play lowest card */
+       for (; index > 0; index--) iter++;
+    ret = *(iter);
+    cards[who][suit].erase(iter);
+    return ret;
+  }
+  
+  index = a.getRandomUint(2); /* with prob 50% we ruff */
+  if ((index == 0) && (contractSuit < 4) && (!cards[who][contactSuit].empty())) {
+    ret = *(cards[who][contactSuit].begin());
+    cards[who][suitContract].erase(cards[who][contactSuit].begin());
+    return ret;
+  }
+
+  /* player hasn't got a card in this suit */
+  return playCard1(who);
+}
+
+int Betterplayer::playCard3 (int who, int c1, int c2) {
+  int suit = c1 / 13, index, ret;
+  std::set<int>::iterator iter;
+
+  if (!cards[who][suit].empty()) { /* player has a card in this suit */
+    index = a.getRandomUint(cards[who][suit].size()*2);
+    iter = cards[who][suit].begin();
+    if (index < cards[who][suit].size()) /* with prob 50% we play lowest card */
+       for (; index > 0; index--) iter++;
+    ret = *(iter);
+    cards[who][suit].erase(iter);
+    return ret;
+  }
+  
+  index = a.getRandomUint(2); /* with prob 50% we ruff */
+  if ((index == 0) && (contractSuit < 4) && (!cards[who][contactSuit].empty())) {
+    ret = *(cards[who][contactSuit].begin());
+    cards[who][suitContract].erase(cards[who][contactSuit].begin());
+    return ret;
+  }
+
+  /* player hasn't got a card in this suit */
+  return playCard1(who);
+}
+
+int Dummyplayer::playCard4(int who, int c1, int c2, int c3) {
+  int suit = c1 / 13, index, ret;
+  int suit2 = c2 / 13, suit3 = c3 / 13;
+  std::set<int>::iterator iter;
+
+  index = a.getRandomUint(10);
+  
+  if (index == 9) { /* in 10% we play random card */
+    if (!cards[who][suit].empty()) { /* player has a card in this suit */
+      index = a.getRandomUint(cards[who][suit].size());
+      iter = cards[who][suit].begin();
+      for (; index > 0; index--) iter++;
+      ret = *(iter);
+      cards[who][suit].erase(iter);
+      return ret;
+    }
+    /* player hasn't got a card in this suit */
+    return playCard1(who);
+  }
+  else { /* we try to take the trick */
+    if (!cards[who][suit].empty()) {
+      if ((suit != contractSuit) && ((suit2 == contractSuit) || (suit3 == contractSuit)) { /* couldn't take trick */
+        iter = cards[who][suit].begin(); /* lowest card */
+        ret = *(iter);
+        cards[who][suit].erase(iter);
+        return ret;
+      }
+      if ((suit == suit2) && (c2 > c1))
+        c1 = c2;
+      if ((suit == suit3) && (c3 > c1))
+        c1 = c3;
+      iter = cards[who][suit].begin();
+      if (c1 != c2) { /* opps take the trick */ 
+        for (; (iter != cards[who][suit].end()) && (*iter < c1)); iter++) {}
+        if (iter == cards[who][suit].end())
+          iter = cards[who][suit].begin();
+        }
+      ret = *(iter);
+      cards[who][suit].erase(iter);
+      return ret;
+    }
+    
+    
+    
+  }
+    
+   
+}
+
+int Betterplayer::play_randomly(int tricksWon, int lastWinner) {
+  
+  if (cardsInTrick > 0) {
+    if (cardsInTrick == 1) {
+      currentTrick.playCard(playCard2((lastWinner + 1) % 4, currentTrick.firstCard()), 1);
+    }
+    if (cardsInTrick <= 2) {
+      currentTrick.playCard(playCard3((lastWinner + 2) % 4, currentTrick.firstCard(), currentTrick.getCard[1]), 2);
+    }
+    if (cardsInTrick <= 3) {
+      currentTrick.playCard(playCard4((lastWinner + 3) % 4, currentTrick.firstCard()), currentTrick.getCard[1], currentTrick.getCard[2]);
+    }
+    lastWinner = (lastWinner + currentTrick.whoWon(contractSuit)) % 4;
+    tricksWon += (lastWinner % 2);
+  }
+    
+  while (!(cards[N][C].empty() && cards[N][D].empty() && cards[N][H].empty() && cards[N][Sp].empty())) {
+    currentTrick.playCard(playCard1(lastWinner), 0);
+    currentTrick.playCard(playCard2((lastWinner + 1) % 4, currentTrick.firstCard()), 1);
+    currentTrick.playCard(playCard3((lastWinner + 2) % 4, currentTrick.firstCard(), currentTrick.getCard[1]), 2);
+    currentTrick.playCard(playCard4((lastWinner + 3) % 4, currentTrick.firstCard(), currentTrick.getCard[1], currentTrick.getCard[2]), 3);
+    lastWinner = (lastWinner + currentTrick.whoWon(contractSuit)) % 4;
+    tricksWon += (lastWinner % 2);
+    //currentTrick.printTrick();
+  }
+  
+  return tricksWon;
 }

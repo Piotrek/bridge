@@ -1,6 +1,9 @@
 #ifndef __STATS_H_
 #define __STATS_H_
 
+#include <cstdio>
+#include <cmath>
+
 #define STALA_UCB 1.0
 #define START_UCB 100.0
 
@@ -28,7 +31,7 @@ public:
   float mean ();
   float variance ();
   float updateUcb (float allPlayouts);
-  
+  float getPlayoutsScore() {return playoutsScore; };
 };
 
 #endif

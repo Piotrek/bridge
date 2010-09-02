@@ -1,6 +1,3 @@
-#include <cstdio>
-#include <cmath>
-
 #include "stats.h"
 
 
@@ -27,8 +24,10 @@ float Stats::variance () {
 }
 
 float Stats::updateUcb (float allPlayouts) {
-  //tu mozna wstawic jakas stala przed pierwiastkiem
-  ucb = mean() + STALA_UCB * sqrt(log(allPlayouts) / playoutsNum);
+  if (playoutsNum > 0)
+    ucb = mean() + STALA_UCB * sqrt(log(allPlayouts) / playoutsNum);
+  else
+    ucb = START_UCB;
   return ucb;
 }
 
