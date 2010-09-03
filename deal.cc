@@ -28,6 +28,15 @@ void Trick::printTrick() {
   fprintf(stderr, "%d %d %d %d\n", cards[0], cards[1], cards[2], cards[3]);
 }
 
+void Trick::printTrickSymbols() {
+  char c1[2], c2[2], c3[2], c4[2];
+  
+  fprintf(stderr, "%s ", changeNumberToCard(cards[0], c1));
+  fprintf(stderr, "%s ", changeNumberToCard(cards[1], c2));
+  fprintf(stderr, "%s ", changeNumberToCard(cards[2], c3));
+  fprintf(stderr, "%s\n", changeNumberToCard(cards[3], c4));
+}
+
 int Deal::getLastCard() {
   return currentTrick.getCard((cardsInTrick + 3) % 4);
 }
@@ -87,19 +96,25 @@ void Deal::incWonTricks() {
 }
 
 void Deal::printDeal() {
+  char card[2];
+  
   for (int i = 0; i < 4; i++) {
     fprintf(stderr, "cards - player no %d\n", i);
-    fprintf(stderr, "SPADES");
-    for(std::set<int>::iterator it = cards[i][Sp].begin(); it != cards[i][Sp].end(); it++) fprintf(stderr, "%d ", *it);
+    fprintf(stderr, "S   ");
+    for(std::set<int>::iterator it = cards[i][Sp].begin(); it != cards[i][Sp].end(); it++) 
+      fprintf(stderr, "%s ", changeNumberToCard(*it, card));
     fprintf(stderr, "\n");
-    fprintf(stderr, "HEARTS");
-    for(std::set<int>::iterator it = cards[i][H].begin(); it != cards[i][H].end(); it++) fprintf(stderr, "%d ", *it);
+    fprintf(stderr, "H   ");
+    for(std::set<int>::iterator it = cards[i][H].begin(); it != cards[i][H].end(); it++)
+      fprintf(stderr, "%s ", changeNumberToCard(*it, card));
     fprintf(stderr, "\n");
-    fprintf(stderr, "DIAMONDS");
-    for(std::set<int>::iterator it = cards[i][D].begin(); it != cards[i][D].end(); it++) fprintf(stderr, "%d ", *it);
+    fprintf(stderr, "D   ");
+    for(std::set<int>::iterator it = cards[i][D].begin(); it != cards[i][D].end(); it++)
+      fprintf(stderr, "%s ", changeNumberToCard(*it, card));
     fprintf(stderr, "\n");
-    fprintf(stderr, "CLUBS");
-    for(std::set<int>::iterator it = cards[i][C].begin(); it != cards[i][C].end(); it++) fprintf(stderr, "%d ", *it);
+    fprintf(stderr, "C   ");
+    for(std::set<int>::iterator it = cards[i][C].begin(); it != cards[i][C].end(); it++)
+      fprintf(stderr, "%s ", changeNumberToCard(*it, card));
     fprintf(stderr, "\n");
   }
 }
