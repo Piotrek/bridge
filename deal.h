@@ -4,7 +4,9 @@
 #include <cstdio>
 #include <vector>
 #include <set>
+
 #include "utils.h"
+#include "myrandom.h"
 
 class Trick
 {
@@ -23,16 +25,18 @@ class Deal
 {
   private:
     Trick currentTrick;
-    std::vector < std::vector < std::set < int > > > cards;
+    CardsSet cards;
+    std::vector < std::vector < int > > playedCards;
     int wonTricks;
     int contractSuit;
     int contractLevel;
     int playerNow;
     int cardsInTrick;
+    static MyRandom a;
     
   public:
     Deal() {};
-    Deal(std::vector < std::vector < std::set < int > > > _cards, Trick _trick, int _suit, int _level, int _won, int _who, int _cit) {
+    Deal(CardsSet _cards, Trick _trick, int _suit, int _level, int _won, int _who, int _cit) {
       cards = _cards;
       currentTrick = _trick;
       contractSuit = _suit;
@@ -40,22 +44,29 @@ class Deal
       wonTricks = _won;
       playerNow = _who % 4;
       cardsInTrick = _cit;
+      playedCards.resize(4);
     };
     int getWonTricks();
     int getContractSuit();
     int getContractLevel();
     Trick getCurrentTrick();
-    std::vector < std::vector < std::set < int > > > getCards();
-    std::vector < std::set < int > > getDummyCards();
-    std::vector < std::set < int > > getDeclarerCards();
-    std::vector < std::set < int > > getEastCards();
-    std::vector < std::set < int > > getWestCards();
+    CardsSet getCards();
+    PlayerCardsSet getDummyCards();
+    PlayerCardsSet getDeclarerCards();
+    PlayerCardsSet getEastCards();
+    PlayerCardsSet getWestCards();
     int whoNow();
     int getCardsInTrick();
     int suitOfTrick();
     void incWonTricks();
     int getLastCard();
     void printDeal();
+    int playRandomly();
+    int playCard1(int who);
+    int playCard2(int who, int c1);
+    int playCard3(int who, int c1, int c2);
+    int playCard4(int who, int c1, int c2, int c3);
+    
 };
 
 #endif // __DEAL_H__
