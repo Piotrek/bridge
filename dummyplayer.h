@@ -53,7 +53,9 @@ class Betterplayer {
     int playCard2(int who, int c1);
     int playCard3(int who, int c1, int c2);
     int playCard4(int who, int c1, int c2, int c3);
-
+    int playRandomSmallCard(int who, int trumps);
+    int playLowestCardFromThisSuit(int who, int suit);
+    int playTryToOverruff(int who, int suit, int card);
 };
 
 #endif
