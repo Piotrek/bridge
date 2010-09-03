@@ -17,6 +17,7 @@ class Trick
     int firstCard();
     int getCard(int i);
     void printTrick();
+    void printTrickSymbols();
 };
 
 class Deal
