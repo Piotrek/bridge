@@ -119,8 +119,8 @@ void UctNode::setLast() {
   last = true;
 }
 
-Deal UctNode::getDeal() {
-  return deal;
+Deal* UctNode::getDeal() {
+  return &deal;
 }
 
 float UctNode::statsMean() {
@@ -171,16 +171,19 @@ void UctTree::exploreTree() {
   }
   if (DEBUG) printf("zapuszczamy playout\n");
   if (node->isLast()) {
-    if (node->getDeal().getWonTricks() >= node->getDeal().getContractLevel() + 6)
+    if (node->getDeal()->getWonTricks() >= node->getDeal()->getContractLevel() + 6)
       playoutScore = 1.0;
     else
       playoutScore = 0.0;
     movesHistory.pop_back();
   } 
   else {
-    Dummyplayer dummypl(&(node->getDeal()));
-    int tricksWon = 0;//dummypl.play_randomly(node->getDeal().getWonTricks(), (4 + node->getDeal().whoNow() - node->getDeal().getCardsInTrick()) % 4);
-    if (tricksWon >= node->getDeal().getContractLevel() + 6)
+    //Dummyplayer dummy(node->getDeal());
+    if (DEBUG) printf("random_play\n");
+    int tricksWon = node->getDeal()->playRandomly();
+    //int tricksWon = dummy.play_randomly(node->getDeal()->getWonTricks(), (4 + node->getDeal()->whoNow() - node->getDeal()->getCardsInTrick()) % 4);
+    if (DEBUG) printf("%d\n", tricksWon);
+    if (tricksWon >= node->getDeal()->getContractLevel() + 6)
       playoutScore = 1.0;
     else
       playoutScore = 0.0;
