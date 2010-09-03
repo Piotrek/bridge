@@ -11,6 +11,7 @@
 using namespace std;
 
 MyRandom Dummyplayer::a = MyRandom(time(NULL));
+MyRandom Betterplayer::a = MyRandom(time(NULL));
 
 
 int main()
