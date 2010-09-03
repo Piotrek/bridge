@@ -10,13 +10,13 @@
 
 using namespace std;
 
+MyRandom Deal::a = MyRandom(time(NULL));
 MyRandom Dummyplayer::a = MyRandom(time(NULL));
-
 
 int main()
 {
-  set < int > dummyCards, declarerCards, defendersCards;
-  vector < vector < set < int > > > cards;
+  set <int> dummyCards, declarerCards, defendersCards;
+  CardsSet cards;
   int count, suit = H, level = -1, cit = 0;
   int num;
   Trick tr;

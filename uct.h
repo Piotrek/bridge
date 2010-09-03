@@ -45,7 +45,7 @@ class UctNode {
     bool expanded();
     bool isLast();
     void setLast();
-    Deal getDeal();
+    Deal* getDeal();
     int getPlayer() { return player; };
     float statsMean();
     void printNode(int depth);
