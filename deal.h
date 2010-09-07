@@ -70,7 +70,10 @@ class Deal
     int playRandomSmallCard(int who, int trumps);
     int playLowestCardFromThisSuit(int who, int suit);
     int playTryToOverruff(int who, int suit, int card);
-    
+    int playRandomCard(int who, int suit);
+    int playTryToTakeThisTrick3(int who, int c1, int c2); /* plays player 3 */
+    int playDoNotBlock(int who, int suit, int card);
+    int playTheLowestHigherCard(int who, int suit, int card);
 };
 
 #endif // __DEAL_H__
