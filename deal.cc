@@ -14,6 +14,12 @@ int Trick::whoWon(int trump) {
 
 void Trick::playCard(int card, int player) {
   cards[player] = card;
+  cardsInTrick = (cardsInTrick + 1) % 4;
+}
+
+void Trick::playCard(int card) {
+  cards[cardsInTrick] = card;
+  cardsInTrick = (cardsInTrick + 1) % 4;
 }
 
 int Trick::firstCard() {
@@ -37,8 +43,12 @@ void Trick::printTrickSymbols() {
   fprintf(stderr, "%s\n", changeNumberToCard(cards[3], c4));
 }
 
+int Trick::getCardsInTrick() {
+  return cardsInTrick;
+}
+
 int Deal::getLastCard() {
-  return currentTrick.getCard((cardsInTrick + 3) % 4);
+  return currentTrick.getCard((getCardsInTrick() + 3) % 4);
 }
 
 
@@ -78,12 +88,12 @@ int Deal::getWonTricks() {
   return wonTricks;
 }
 
-int Deal::whoNow() {
-  return playerNow;
+int Deal::getCardsInTrick() {
+  return currentTrick.getCardsInTrick();
 }
 
-int Deal::getCardsInTrick() {
-  return cardsInTrick;
+int Deal::getWhoNow() {
+  return whoNow;
 }
 
 int Deal::suitOfTrick() {
@@ -123,6 +133,8 @@ int Deal::playRandomSmallCard(int who, int trumps) {
   int i = 0, ret, index = 0, index2, suit = 0;
   std::set<int>::iterator iter;
 
+  if (DEBUG) fprintf(stderr, "playRandomSmallCard\n");
+
   for (i = 0; i < 4; i++) if ((!cards[who][i].empty()) && (i != trumps)) index++;
   /* index - how many different suits (non-trumps) a player has */
   if (index == 0) return playLowestCardFromThisSuit(who, trumps);
@@ -145,6 +157,8 @@ int Deal::playRandomSmallCard(int who, int trumps) {
 int Deal::playLowestCardFromThisSuit(int who, int suit) {
   int ret;
   std::set<int>::iterator iter;
+  
+  if (DEBUG) fprintf(stderr, "playLowestCardFromThisSuit\n");
 
   iter = cards[who][suit].begin();
   ret = *(iter);
@@ -156,6 +170,9 @@ int Deal::playLowestCardFromThisSuit(int who, int suit) {
 int Deal::playTryToOverruff(int who, int suit, int card) {  
   int ret;
   std::set<int>::iterator iter;
+  
+  if (DEBUG) fprintf(stderr, "playTryToOverruff\n");
+
   
   iter = cards[who][suit].begin();
   while (iter != cards[who][suit].end())
@@ -174,6 +191,9 @@ int Deal::playRandomCard(int who, int suit) {
   int ret, index;
   std::set < int >::iterator iter;
   
+  if (DEBUG) fprintf(stderr, "playRandomCard\n");
+
+  
   if (!cards[who][suit].empty()) { /* player has a card in this suit */
     index = a.getRandomUint(cards[who][suit].size());
     iter = cards[who][suit].begin();
@@ -184,6 +204,125 @@ int Deal::playRandomCard(int who, int suit) {
     return ret;
   }
   return playCard1(who);
+}
+
+int Deal::playDoNotBlock (int who, int suit, int card) {
+  int part = (who + 2) % 4, ret;
+  std::set < int >::iterator iter;
+  
+  if (DEBUG) fprintf(stderr, "playDoNotBlock\n");
+  
+  if (cards[part][suit].size() == 1) { iter = cards[who][suit].end(); iter--; }
+  else if (cards[part][suit].size() <= cards[who][suit].size()) iter = cards[who][suit].begin();
+  else {
+    iter = cards[who][suit].begin();
+    for (; (iter != cards[who][suit].end() && (*iter < card)); iter++) {}
+    if (iter != cards[who][suit].begin()) iter--;
+  }
+  ret = *(iter);
+  playedCards[who].push_back(ret);
+  cards[who][suit].erase(iter);
+  return ret;
+}
+
+/* if doesn't have higher card, plays the lowest from this suit */
+int Deal::playTheLowestHigherCard(int who, int suit, int card) {
+  int ret;
+  std::set < int >::iterator iter = cards[who][suit].begin();
+ 
+  if (DEBUG) fprintf(stderr, "playTheLowestHigher\n"); 
+    
+  for (; (iter != cards[who][suit].end()) && (*iter < card); iter++) {}
+  if (iter == cards[who][suit].end())
+    iter = cards[who][suit].begin();
+  ret = *(iter);
+  playedCards[who].push_back(*iter);
+  cards[who][suit].erase(iter);
+  return ret;
+}
+    
+/* pre: player has a card in the lead's suit */
+int Deal::playTryToTakeThisTrick3(int who, int c1, int c2) {
+  int suit1 = c1 / 13, suit2 = c2 / 13, ret, nextpl = (who + 1) % 4, c3, c4, c4_h, c4_l;
+  std::set < int >::iterator iter;
+  
+  if (DEBUG) fprintf(stderr, "playTryToTake30\n"); 
+  
+  if ((suit1 != contractSuit) && (suit2 == contractSuit)) /* couldn't take trick */
+        return playLowestCardFromThisSuit(who, suit1);
+  
+  if (DEBUG) fprintf(stderr, "playTryToTake31\n"); 
+  
+  if (cards[nextpl][suit1].empty()) { /* player 4 doesn't have a card in that suit */
+    
+    if (DEBUG) fprintf(stderr, "playTryToTake32\n"); 
+  
+    if (suit2 != suit1) {
+      if (contractSuit == NT) return playDoNotBlock(who, suit1, c1);
+      if (cards[nextpl][contractSuit].empty()) /* probably there are no trumps among opps at all */
+        return playDoNotBlock(who, suit1, c1);
+      return playLowestCardFromThisSuit(who, suit1);
+    }
+    if (DEBUG) fprintf(stderr, "playTryToTake33\n"); 
+    
+    /* suit1 = suit2 = suit3 != suit4 */
+    
+    /* partner's card is higher -> play the lowest card from the lead's suit */
+    if (c1 > c2) return playLowestCardFromThisSuit(who, suit1);
+    /* play the lowest card higer than c2 */
+    return playTheLowestHigherCard(who, suit1, c2);
+  
+  }
+  if (DEBUG) fprintf(stderr, "playTryToTake34\n"); 
+  
+  
+  /* player 4 has a card in that suit */
+  iter = cards[nextpl][suit1].end();
+  iter--;
+  c4 = *iter; /* the highest card in the suit */
+  
+  if (suit2 == suit1) {
+      if (DEBUG) fprintf(stderr, "playTryToTake35\n"); 
+  
+    //if (c4 > c2) c2 = c4; /* c2 - higher from the opps' cards */
+    if ((c1 > c2) && (c1 > c4))
+      return playLowestCardFromThisSuit(who, suit1);
+    if (c2 > c4)
+      return playTheLowestHigherCard(who, suit1, c2);
+  }
+    if (DEBUG) fprintf(stderr, "playTryToTake36\n"); 
+  
+  
+  /* c2 < c4 i c1 < c4   or  suit1 = suit3 = suit 4 != suit2 */
+  iter = cards[who][suit1].end();
+  iter--;
+  c3 = *iter; /* the highest card in the suit */
+  if (c3 > c4) /* play the lowest higher card */
+    return playTheLowestHigherCard(who, suit1, c4);
+  if (c3 < c2)
+    return playLowestCardFromThisSuit(who, suit1);
+    
+     if (DEBUG) fprintf(stderr, "playTryToTake37\n"); 
+   
+    
+  iter = cards[nextpl][suit1].end(); iter--;
+  for (; (iter != cards[nextpl][suit1].begin()) && (*iter > c3); iter--) {}
+  if (*iter < c3) c4_h = c4;
+  else c4_h = *iter;
+  c4_l = 0;
+  if (iter != cards[nextpl][suit1].begin()) { iter--; c4_l = *iter; }  
+  iter = cards[who][suit1].begin();
+  for (; (iter != cards[who][suit1].end()) && ((*iter < c4_l) || (*iter > c2)); iter++) {}
+  
+  if (iter == cards[who][suit1].end())
+    iter = cards[who][suit1].begin();
+  
+    if (DEBUG) fprintf(stderr, "playTryToTake38\n"); 
+  
+  ret = *(iter);
+  playedCards[who].push_back(*iter);
+  cards[who][suit1].erase(iter);
+  return ret;
 }
 
 int Deal::playCard1(int who) {
@@ -235,97 +374,9 @@ int Deal::playCard2(int who, int c1) {
   return playCard1(who);
 }
 
-int Deal::playDoNotBlock (int who, int suit, int card) {
-  int part = (who + 2) % 4, ret;
-  std::set < int >::iterator iter;
-  
-  if (cards[part][suit].size() == 1) { iter = cards[who][suit].end(); iter--; }
-  else if (cards[part][suit].size() <= cards[who][suit].size()) iter = cards[who][suit].begin();
-  else {
-    iter = cards[who][suit].begin();
-    for (; (iter != cards[who][suit].end() && (*iter < card)); iter++) {}
-    if (iter != cards[who][suit].begin()) iter--;
-  }
-  ret = *(iter);
-  playedCards[who].push_back(ret);
-  cards[who][suit].erase(iter);
-  return ret;
-}
 
-/* if doesn't have higher card, plays the lowest from this suit */
-int Deal::playTheLowestHigherCard(int who, int suit, int card) {
-  int ret;
-  std::set < int >::iterator iter = cards[who][suit].begin();
-    
-  for (; (iter != cards[who][suit].end()) && (*iter < card); iter++) {}
-  if (iter == cards[who][suit].end())
-    iter = cards[who][suit].begin();
-  ret = *(iter);
-  playedCards[who].push_back(*iter);
-  cards[who][suit].erase(iter);
-  return ret;
-}
-    
-/* pre: player has a card in the lead's suit */
-int Deal::playTryToTakeThisTrick3(int who, int c1, int c2) {
-  int suit1 = c1 / 13, suit2 = c2 / 13, ret, nextpl = (who + 1) % 4, c3, c4, c4_h, c4_l;
-  std::set < int >::iterator iter;
-  
-  if ((suit1 != contractSuit) && (suit2 == contractSuit)) /* couldn't take trick */
-        return playLowestCardFromThisSuit(who, suit1);
-  
-  if (cards[nextpl][suit1].empty()) { /* player 4 doesn't have a card in that suit */
-    
-    if (suit2 != suit1) {
-      if (contractSuit == NT) return playDoNotBlock(who, suit1, c1);
-      if (cards[nextpl][contractSuit].empty()) /* probably there are no trumps among opps at all */
-        return playDoNotBlock(who, suit1, c1);
-      return playLowestCardFromThisSuit(who, suit1);
-    }
-    
-    /* suit1 = suit2 = suit3 != suit4 */
-    
-    /* partner's card is higher -> play the lowest card from the lead's suit */
-    if (c1 > c2) return playLowestCardFromThisSuit(who, suit1);
-    /* play the lowest card higer than c2 */
-    return playTheLowestHigherCard(who, suit1, c2);
-  }
-  
-  /* player 4 has a card in that suit */
-  iter = cards[nextpl][suit1].end();
-  iter--;
-  c4 = *iter; /* the highest card in the suit */
-  
-  if (suit2 == suit1) {
-    //if (c4 > c2) c2 = c4; /* c2 - higher from the opps' cards */
-    if ((c1 > c2) && (c1 > c4))
-      return playLowestCardFromThisSuit(who, suit1);
-    if (c2 > c4)
-      return playTheLowestHigherCard(who, suit1, c2);
-  }
-  
-  /* c2 < c4 i c1 < c4   or  suit1 = suit3 = suit 4 != suit2 */
-  iter = cards[who][suit1].end();
-  iter--;
-  c3 = *iter; /* the highest card in the suit */
-  if (c3 > c4) /* play the lowest higher card */
-    return playTheLowestHigherCard(who, suit1, c4);
-  if (c3 < c2)
-    return playLowestCardFromThisSuit(who, suit1);
-    
-  iter = cards[nextpl][suit1].end(); iter--;
-  for (; (iter != cards[nextpl][suit1].begin()) && (*iter > c3); iter--) {}
-  if (*iter < c3) c4_h = c4;
-  else c4_h = *iter;
-  c4_l = 0;
-  if (iter != cards[nextpl][suit1].begin()) { iter--; c4_l = *iter; }  
-  iter = cards[who][suit1].begin();
-  for (; (iter != cards[who][suit1].end()) && ((*iter < c4_l) || (*iter > c2)); iter++) {}
-  ret = *(iter);
-  playedCards[who].push_back(*iter);
-  cards[who][suit1].erase(iter);
-  return ret;
-}
+
+
 
 int Deal::playCard3(int who, int c1, int c2) {
   int index, ret, nextpl = (who + 1) % 4, c3, c4, c4_l, c4_h;
@@ -334,30 +385,46 @@ int Deal::playCard3(int who, int c1, int c2) {
   
   index = a.getRandomUint(10);
   
+  if (DEBUG) fprintf(stderr, "playCard30\n"); 
+  
   if (index == 9) /* in 10% we play random card */
     return playRandomCard(who, suit1);
 
+  if (DEBUG) fprintf(stderr, "playCard31\n");
+
   if (!cards[who][suit1].empty()) /* player 3 has a card in the lead's suit */
     return playTryToTakeThisTrick3(who, c1, c2);
+    
+  if (DEBUG) fprintf(stderr, "playCard32\n");
+    
   if ((contractSuit == NT) || ((contractSuit != NT) && (cards[who][contractSuit].empty())))
     return playRandomSmallCard(who, contractSuit);
+  
+  if (DEBUG) fprintf(stderr, "playCard33\n");
     
   /* there are trumps */
   if (suit1 == contractSuit)
     return playRandomSmallCard(who, suit1);
+    
+  if (DEBUG) fprintf(stderr, "playCard34\n");
+    
   if (cards[who][suit2].empty()) /* player can't ruff */
     return playRandomSmallCard(who, contractSuit);
+  
+  if (DEBUG) fprintf(stderr, "playCard35\n");
   
   /* and player 3 has trumps */
   if (suit2 == contractSuit) /* player 2 has ruffed */ {
     if (!cards[nextpl][suit1].empty() || (cards[nextpl][contractSuit].empty()))
       return playTryToOverruff(who, contractSuit, c2);
-  }
-  
+  }  
   else {
     if (!cards[nextpl][suit1].empty() || (cards[nextpl][contractSuit].empty()))
       return playLowestCardFromThisSuit(who, contractSuit);
   }
+  
+  if (DEBUG) fprintf(stderr, "playCard36\n");
+  
   
   /* player 4 has trumps */
   iter = cards[nextpl][contractSuit].end();
@@ -366,11 +433,17 @@ int Deal::playCard3(int who, int c1, int c2) {
   iter = cards[who][contractSuit].end();
   iter--;
   c3 = *iter; /* the highest card in the suit */
+
+  if (DEBUG) fprintf(stderr, "playCard37\n");
+  
   
   if ((c3 > c4) && (!(suit2 == contractSuit) || (c3 > c2))) /* play the lowest higher card */
     return playTheLowestHigherCard(who, suit1, std::max(c2, c4));
   if (c3 > c4) /* c3 < c2 */
     return playRandomSmallCard(who, contractSuit);
+  
+  if (DEBUG) fprintf(stderr, "playCard38\n");
+    
   
   /* c4 > c2 (or c2 not a trump) and c4 > c3 */
   iter = cards[nextpl][contractSuit].end(); iter--;
@@ -384,6 +457,9 @@ int Deal::playCard3(int who, int c1, int c2) {
   ret = *(iter);
   playedCards[who].push_back(*iter);
   cards[who][contractSuit].erase(iter);
+  
+  if (DEBUG) fprintf(stderr, "playCard39\n");
+  
   return ret;
 }
 
@@ -449,33 +525,48 @@ int Deal::playCard4(int who, int c1, int c2, int c3) {
 int Deal::playRandomly() {
   int i;
   int tricksWon = wonTricks;
-  int lastWinner = (4 + playerNow - cardsInTrick) % 4;
-  Trick trick = currentTrick;
+  int lastWinner = (4 + whoNow - getCardsInTrick()) % 4;
   std::vector<int>::iterator iter;
   
   for (i = 0; i < 4; i++)
     playedCards[i].clear();
   
-  if (cardsInTrick > 0) {
-    if (cardsInTrick == 1) {
-      trick.playCard(playCard2((lastWinner + 1) % 4, trick.firstCard()), 1);
+  if (getCardsInTrick() > 0) {
+    if (getCardsInTrick() == 1) {
+      currentTrick.playCard(playCard2((lastWinner + 1) % 4, currentTrick.firstCard()));
     }
-    if (cardsInTrick <= 2) {
-      trick.playCard(playCard2((lastWinner + 2) % 4, trick.firstCard()), 2);
+    if (DEBUG)
+      currentTrick.printTrickSymbols();
+    if (getCardsInTrick() <= 2) {
+      currentTrick.playCard(playCard3((lastWinner + 2) % 4, currentTrick.firstCard(), currentTrick.getCard(1)));
     }
-    if (cardsInTrick <= 3) {
-      trick.playCard(playCard4((lastWinner + 3) % 4, trick.firstCard(), trick.getCard(1), trick.getCard(2)), 3);
+    if (DEBUG)
+      currentTrick.printTrickSymbols();
+    if (getCardsInTrick() <= 3) {
+      currentTrick.playCard(playCard4((lastWinner + 3) % 4, currentTrick.firstCard(), currentTrick.getCard(1), currentTrick.getCard(2)));
     }
-    lastWinner = (lastWinner + trick.whoWon(contractSuit)) % 4;
-    tricksWon += (lastWinner % 2);
+    lastWinner = (lastWinner + currentTrick.whoWon(contractSuit)) % 4;
+    wonTricks += (lastWinner % 2);
   }
     
   while (!(cards[N][C].empty() && cards[N][D].empty() && cards[N][H].empty() && cards[N][Sp].empty())) {
-    trick.playCard(playCard1(lastWinner), 0);
-    trick.playCard(playCard2((lastWinner + 1) % 4, trick.firstCard()), 1);
-    trick.playCard(playCard2((lastWinner + 2) % 4, trick.firstCard()), 2);
-    trick.playCard(playCard4((lastWinner + 3) % 4, trick.firstCard(), trick.getCard(1), trick.getCard(2)), 3);
-    lastWinner = (lastWinner + trick.whoWon(contractSuit)) % 4;
+    currentTrick.playCard(playCard1(lastWinner));
+    if (DEBUG)
+      currentTrick.printTrickSymbols();
+    
+    currentTrick.playCard(playCard2((lastWinner + 1) % 4, currentTrick.firstCard()));
+    if (DEBUG) 
+      currentTrick.printTrickSymbols();
+    
+    currentTrick.playCard(playCard3((lastWinner + 2) % 4, currentTrick.firstCard(), currentTrick.getCard(1)));
+    if (DEBUG)
+      currentTrick.printTrickSymbols();
+    
+    currentTrick.playCard(playCard4((lastWinner + 3) % 4, currentTrick.firstCard(), currentTrick.getCard(1), currentTrick.getCard(2)));
+    if (DEBUG)
+      currentTrick.printTrickSymbols();
+    
+    lastWinner = (lastWinner + currentTrick.whoWon(contractSuit)) % 4;
     tricksWon += (lastWinner % 2);
   }
   
@@ -484,4 +575,37 @@ int Deal::playRandomly() {
       cards[i][(*iter / 13)].insert(*iter);
   
   return tricksWon;
+}
+
+void Deal::undoAllCards() {
+  int i;
+  std::vector<int>::iterator iter;
+  
+  for(i = 0; i < 4; i++)
+    for (iter = playedUctCards[i].begin(); iter != playedUctCards[i].end(); iter++)
+      cards[i][(*iter / 13)].insert(*iter);
+      
+  for (i = 0; i < 4; i++)
+    playedUctCards[i].clear();
+      
+  currentTrick = startTrick;
+  whoNow = whoStarts;
+  wonTricks = startWonTricks;          
+}
+
+void Deal::playCard(int card) {
+  playedUctCards[whoNow].push_back(card);
+  currentTrick.playCard(card);
+  cards[whoNow][(card) / 13].erase(card);
+  if (getCardsInTrick() != 0)  /* same trick */
+    whoNow = (whoNow + 1) % 4;
+  else { /* new trick */    
+    whoNow = (whoNow + currentTrick.whoWon(contractSuit) + 1) % 4;
+    if ((whoNow % 2) == 1)
+      wonTricks++;
+  }
+} 
+
+bool Deal::endOfDeal(int player){
+  return (cards[player][Sp].empty() && cards[player][H].empty() && cards[player][D].empty() && cards[player][C].empty());
 }

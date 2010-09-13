@@ -1,7 +1,4 @@
-#include <set>
-
 #include "uct.h"
-
 
 void UctNode::addChild (UctNode& node) {
   children.push_front(node); 
@@ -31,7 +28,6 @@ UctNode* UctNode::selectUCBChild () {
       bestNode = &(*it);
       maxUcb = ucb;
     }
-    //fprintf(stderr, "%d %f %f\n", it->getCard(), ucb, maxUcb);
   }
   return bestNode;  
 }
@@ -47,7 +43,6 @@ UctNode* UctNode::selectBestChild () {
       bestNode = &(*it);
       maxMean = mean;
     }
-    //fprintf(stderr, "%d %f %f %f\n", it->getCard(), it->playNum(), mean, maxMean);
   }
   return bestNode;  
 }
@@ -58,53 +53,32 @@ void UctNode::addChildren() {
   std::set < int > cards;
   std::set < int >::iterator it;
   UctNode* node;
-  Deal* newDeal;
-  Trick newTrick;
-  std::vector < std::vector < std::set < int > > > newCards;
   
   expand = true;
-  who = deal.whoNow();
-  allCards = deal.getCards()[who];
-  if ((deal.getCardsInTrick() == 0) or (allCards[deal.suitOfTrick()].empty())) {
+  who = deal->getWhoNow();
+  allCards = deal->getCards()[who];
+  if ((deal->getCardsInTrick() == 0) or (allCards[deal->suitOfTrick()].empty())) {
     cards.clear();
     for (int i = 0; i < 4; i++)
       cards.insert(allCards[i].begin(), allCards[i].end());
   }
   else {
-    cards = allCards[deal.suitOfTrick()];
+    cards = allCards[deal->suitOfTrick()];
   }
-  if (deal.getCardsInTrick() != 3) /* same trick */
-    for (it = cards.begin(); it != cards.end(); it++) {
-      //fprintf(stderr, "tworze childa dla %d\n", *it);
-      newCards = deal.getCards();
-      newCards[who][(*it) / 13].erase(*it);
-      newTrick = deal.getCurrentTrick();
-      newTrick.playCard(*it, deal.getCardsInTrick());
-      newDeal = new Deal(newCards, newTrick, deal.getContractSuit(), deal.getContractLevel(), deal.getWonTricks(), who + 1, deal.getCardsInTrick() + 1);
-      node = new UctNode(who % 2, *newDeal);
-      addChild(*node);
-    }
-  else { /* new trick */
-    for (it = cards.begin(); it != cards.end(); it++) {
-      //fprintf(stderr, "tworze childa dla %d\n", *it);
-      newCards = deal.getCards();
-      newCards[who][(*it) / 13].erase(*it);
-      newTrick = deal.getCurrentTrick();
-      newTrick.playCard(*it, deal.getCardsInTrick());
-      who2 = (who + newTrick.whoWon(deal.getContractSuit()) + 1) % 4;
-      newDeal = new Deal(newCards, newTrick, deal.getContractSuit(), deal.getContractLevel(), deal.getWonTricks(), who2, 0);
-      if ((who2 % 2) == 1)
-        newDeal->incWonTricks();
-      node = new UctNode(who % 2, *newDeal);
-      if (newCards[N][C].empty() && newCards[N][D].empty() && newCards[N][H].empty() && newCards[N][Sp].empty())
+  
+  for (it = cards.begin(); it != cards.end(); it++) {
+    node = new UctNode(who % 2, *it);
+    if (deal->getCardsInTrick() == 3) {
+      who2 = (who + 1) % 4;
+      if (deal->endOfDeal(who2))
         node->setLast();
-      addChild(*node);
     }
-  }
+    addChild(*node);
+  }  
 }
 
 int UctNode::getCard() {
-  return deal.getLastCard();
+  return card;
 }
 
 bool UctNode::expanded() {
@@ -119,10 +93,6 @@ void UctNode::setLast() {
   last = true;
 }
 
-Deal* UctNode::getDeal() {
-  return &deal;
-}
-
 float UctNode::statsMean() {
   return playoutsStats.mean();
 }
@@ -130,6 +100,7 @@ float UctNode::statsMean() {
 void UctNode::printNode(int depth) {
   char c[3];
   
+  //if (depth >= 4) return;
   for (int i = 0; i < depth; i++)
     fprintf(stderr, "   ");
   changeNumberToCard(getCard(), c); 
@@ -160,6 +131,7 @@ void UctTree::exploreTree() {
   if (DEBUG) printf("poki ma dzieci idziemy dalej\n");
   while (node->expanded()) {
     node = node->selectUCBChild();
+    deal->playCard(node->getCard());
     movesHistory.push_back(node);
   }
 
@@ -167,32 +139,36 @@ void UctTree::exploreTree() {
   if (node->playNum() > MOVES_BEFORE_EXPAND) {
     node->addChildren();
     node = node->selectUCBChild();
+    deal->playCard(node->getCard());
     movesHistory.push_back(node);
   }
   if (DEBUG) printf("zapuszczamy playout\n");
   if (node->isLast()) {
-    if (node->getDeal()->getWonTricks() >= node->getDeal()->getContractLevel() + 6)
+    if (deal->getWonTricks() >= deal->getContractLevel() + 6)
       playoutScore = 1.0;
     else
       playoutScore = 0.0;
     movesHistory.pop_back();
   } 
   else {
-    //Dummyplayer dummy(node->getDeal());
     if (DEBUG) printf("random_play\n");
-    int tricksWon = node->getDeal()->playRandomly();
-    //int tricksWon = dummy.play_randomly(node->getDeal()->getWonTricks(), (4 + node->getDeal()->whoNow() - node->getDeal()->getCardsInTrick()) % 4);
+    int tricksWon = deal->playRandomly();
     if (DEBUG) printf("%d\n", tricksWon);
-    if (tricksWon >= node->getDeal()->getContractLevel() + 6)
+    if (tricksWon >= deal->getContractLevel() + 6)
       playoutScore = 1.0;
     else
       playoutScore = 0.0;
   }
-  //printf("playout score %f %d\n", playoutScore, node->getCard());
-
+  
   if (DEBUG) printf("uaktualniamy wezly dla ruchow ze sciezki\n");
   for (int i = movesHistory.size()-1; i >= 0; i--)
     movesHistory[i]->updateStats(playoutScore);
+    
+  if (DEBUG) printf("cofamy wszystkie ruchy\n");
+  deal->undoAllCards();
+  if (DEBUG) printf("ruchy wycofane\n");
+  
+    
 }
 
 UctNode* UctTree::selectBestMove () {

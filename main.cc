@@ -1,26 +1,21 @@
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
-#include <vector>
-#include <set>
+#include "main.h"
 
-#include "uct.h"
-#include "utils.h"
-#include "dummyplayer.h"
 
 using namespace std;
 
 MyRandom Deal::a = MyRandom(time(NULL));
-MyRandom Dummyplayer::a = MyRandom(time(NULL));
-MyRandom Betterplayer::a = MyRandom(time(NULL));
+//MyRandom Dummyplayer::a = MyRandom(time(NULL));
+//MyRandom Betterplayer::a = MyRandom(time(NULL));
+
+Deal *deal;
 
 int main()
 {
   set <int> dummyCards, declarerCards, defendersCards;
   CardsSet cards;
-  int count, suit = H, level = -1, cit = 0;
+  int count, suit = NT, level = -1, cit = 0;
   int num;
-  Trick tr;
+  Trick tr(0);
   
   cards.resize(4);
   for (int i = 0; i < 4; i++)
@@ -96,9 +91,9 @@ int main()
       char c[2];
       int card;
       printf("w gen_move\n");
-      Deal newDeal(cards, tr, suit, level, 0, 3, cit);
+      deal = new Deal(cards, tr, suit, level, 0, 3);
       printf("stworzono deal\n");
-      UctTree tree = UctTree(1, newDeal); //TODO
+      UctTree tree = UctTree(1); //TODO
       card = tree.genMove()->getCard();
       printf("%s ", changeNumberToCard(card,c));
       printf("\n");

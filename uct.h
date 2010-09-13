@@ -7,30 +7,33 @@
 #include <set>
 
 #include "deal.h"
-#include "dummyplayer.h"
 #include "stats.h"
 #include "utils.h"
+#include "main.h"
 
 #define MOVES_BEFORE_EXPAND 100
 #define DEBUG 0
+
+extern Deal *deal;
+ 
  
 class UctNode {
   typedef std::list<UctNode> ChildrenList;
-
+  
   private:
     int player;
-    ChildrenList children;
+    int card;
+    std::list<UctNode> children;
     bool expand;
     bool last;
-    Deal deal;
     Stats playoutsStats;
 
   public:
-    UctNode (int _player, Deal _deal) {
+    UctNode (int _player, int _card) {
       player = _player;
+      card = _card;
       children = ChildrenList();
       expand = false;
-      deal = _deal;
       last = false;
     };
     
@@ -45,8 +48,7 @@ class UctNode {
     bool expanded();
     bool isLast();
     void setLast();
-    Deal* getDeal();
-    int getPlayer() { return player; };
+    int getPlayer();
     float statsMean();
     void printNode(int depth);
 };
@@ -61,8 +63,7 @@ class UctTree {
     UctNode root;
     
   public:
-    UctTree (int _player, Deal _deal) : root(_player, _deal) { root.addChildren(); };
-    UctTree (int _player, std::set<int> set1, std::set<int> set2, Deal _deal) : root(_player, _deal) {};
+    UctTree (int _player) : root(_player, 0) { root.addChildren(); };
     UctNode* selectBestMove();
     UctNode* genMove();
     void exploreTree();
