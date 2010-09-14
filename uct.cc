@@ -118,7 +118,7 @@ void UctNode::printNode(int depth) {
 
 //TODO
 UctNode* UctTree::genMove() {
-  for (int i = 0; i < 2; i++) {
+  for (int i = 0; i < 10000000; i++) {
     //printf("%d\n", i);
     exploreTree();
   }

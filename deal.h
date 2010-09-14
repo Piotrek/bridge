@@ -85,9 +85,10 @@ class Deal
     int playRandomSmallCard(int who, int trumps);
     int playLowestCardFromThisSuit(int who, int suit);
     int playTryToOverruff(int who, int suit, int card);
-    int playRandomCard(int who, int suit);
+    int playRandomCardFromThisSuit(int who, int suit);
+    int playRandomCard(int who);
     int playTryToTakeThisTrick3(int who, int c1, int c2); /* plays player 3 */
-    int playDoNotBlock(int who, int suit, int card);
+    int playDoNotBlock(int who, int suit);
     int playTheLowestHigherCard(int who, int suit, int card);
     void playCard(int card);
     void playUserCard(int card);
