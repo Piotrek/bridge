@@ -547,6 +547,7 @@ int Deal::playRandomly() {
     }
     lastWinner = (lastWinner + currentTrick.whoWon(contractSuit)) % 4;
     wonTricks += (lastWinner % 2);
+    currentTrick.printTrickSymbols();
   }
     
   while (!(cards[N][C].empty() && cards[N][D].empty() && cards[N][H].empty() && cards[N][Sp].empty())) {
@@ -568,6 +569,7 @@ int Deal::playRandomly() {
     
     lastWinner = (lastWinner + currentTrick.whoWon(contractSuit)) % 4;
     tricksWon += (lastWinner % 2);
+    currentTrick.printTrickSymbols();
   }
   
   for(i = 0; i < 4; i++)
@@ -578,23 +580,25 @@ int Deal::playRandomly() {
 }
 
 void Deal::undoAllCards() {
-  int i;
-  std::vector<int>::iterator iter;
+  //int i;
+  //std::vector< std::pair <int, int> >::iterator iter;
   
-  for(i = 0; i < 4; i++)
-    for (iter = playedUctCards[i].begin(); iter != playedUctCards[i].end(); iter++)
-      cards[i][(*iter / 13)].insert(*iter);
+  //for (iter = playedUctCards.begin(); iter != playedUctCards.end(); iter++)
+  //    cards[iter->first][(iter->second / 13)].insert(iter->second);
       
-  for (i = 0; i < 4; i++)
-    playedUctCards[i].clear();
+  //playedUctCards.clear();
       
   currentTrick = startTrick;
   whoNow = whoStarts;
   wonTricks = startWonTricks;          
 }
 
+void Deal::undoCard(int player, int card) {
+   cards[player][card / 13].insert(card);
+}
+
 void Deal::playCard(int card) {
-  playedUctCards[whoNow].push_back(card);
+  //playedUctCards.push_back(std::make_pair(whoNow, card));
   currentTrick.playCard(card);
   cards[whoNow][(card) / 13].erase(card);
   if (getCardsInTrick() != 0)  /* same trick */
@@ -604,7 +608,14 @@ void Deal::playCard(int card) {
     if ((whoNow % 2) == 1)
       wonTricks++;
   }
-} 
+}
+
+void Deal::playUserCard(int card) {
+  playCard(card);
+  startTrick = currentTrick;
+  startWonTricks = wonTricks;
+  whoStarts = whoNow;
+}
 
 bool Deal::endOfDeal(int player){
   return (cards[player][Sp].empty() && cards[player][H].empty() && cards[player][D].empty() && cards[player][C].empty());

@@ -102,14 +102,7 @@ int main()
       char player[2], card[3];
       scanf("%s %s", player, card);
       int c = changeCardToNumber(card);
-      if (player[0] == 'N')
-        dummyCards.erase(c);
-      else {
-        if (player[0] == 'S')
-          declarerCards.erase(c);
-        else 
-          defendersCards.erase(c);
-      }
+      deal->playUserCard(c);
     }
     else if (!strcmp(cmd, "set_board_size")) {
       scanf("%d", &count);

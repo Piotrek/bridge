@@ -5,7 +5,7 @@ void UctNode::addChild (UctNode& node) {
 }
 
 void UctNode::updateStats (float playoutScore) {
-  playoutsStats.update(player * playoutScore + (1 - player) * (1.0 - playoutScore));  
+  playoutsStats.update((player % 2) * playoutScore + (1 - (player % 2)) * (1.0 - playoutScore));  
 }
 
 float UctNode::updateUcb (float allPlayouts) {
@@ -67,7 +67,7 @@ void UctNode::addChildren() {
   }
   
   for (it = cards.begin(); it != cards.end(); it++) {
-    node = new UctNode(who % 2, *it);
+    node = new UctNode(who, *it);
     if (deal->getCardsInTrick() == 3) {
       who2 = (who + 1) % 4;
       if (deal->endOfDeal(who2))
@@ -79,6 +79,10 @@ void UctNode::addChildren() {
 
 int UctNode::getCard() {
   return card;
+}
+
+int UctNode::getPlayer() {
+  return player;
 }
 
 bool UctNode::expanded() {
@@ -100,7 +104,7 @@ float UctNode::statsMean() {
 void UctNode::printNode(int depth) {
   char c[3];
   
-  //if (depth >= 4) return;
+  if (depth >= 4) return;
   for (int i = 0; i < depth; i++)
     fprintf(stderr, "   ");
   changeNumberToCard(getCard(), c); 
@@ -114,7 +118,7 @@ void UctNode::printNode(int depth) {
 
 //TODO
 UctNode* UctTree::genMove() {
-  for (int i = 0; i < 1000000; i++) {
+  for (int i = 0; i < 2; i++) {
     //printf("%d\n", i);
     exploreTree();
   }
@@ -161,8 +165,11 @@ void UctTree::exploreTree() {
   }
   
   if (DEBUG) printf("uaktualniamy wezly dla ruchow ze sciezki\n");
-  for (int i = movesHistory.size()-1; i >= 0; i--)
+  for (int i = movesHistory.size()-1; i >= 1; i--) {
     movesHistory[i]->updateStats(playoutScore);
+    deal->undoCard(movesHistory[i]->getPlayer(), movesHistory[i]->getCard());
+  }
+  movesHistory[0]->updateStats(playoutScore);
     
   if (DEBUG) printf("cofamy wszystkie ruchy\n");
   deal->undoAllCards();

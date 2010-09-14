@@ -23,7 +23,7 @@ class UctNode {
   private:
     int player;
     int card;
-    std::list<UctNode> children;
+    ChildrenList children;
     bool expand;
     bool last;
     Stats playoutsStats;

@@ -4,9 +4,12 @@
 #include <cstdio>
 #include <vector>
 #include <set>
+#include <utility>
 
 #include "utils.h"
 #include "myrandom.h"
+
+
 
 #define DEBUG 0
 
@@ -35,7 +38,7 @@ class Deal
     Trick startTrick;
     CardsSet cards;
     std::vector < std::vector < int > > playedCards;
-    std::vector < std::vector < int > > playedUctCards;
+    //std::vector < std::pair < int, int > > playedUctCards;
     int wonTricks;
     int startWonTricks;
     int contractSuit;
@@ -57,7 +60,7 @@ class Deal
       whoNow = _who % 4;
       whoStarts = _who % 4;
       playedCards.resize(4);
-      playedUctCards.resize(4);
+      //playedUctCards.clear();
     };
     int getWonTricks();
     int getContractSuit();
@@ -87,7 +90,9 @@ class Deal
     int playDoNotBlock(int who, int suit, int card);
     int playTheLowestHigherCard(int who, int suit, int card);
     void playCard(int card);
+    void playUserCard(int card);
     void undoAllCards(); 
+    void undoCard(int player, int card);
     bool endOfDeal(int player);
 };
 
