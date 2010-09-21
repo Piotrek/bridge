@@ -11,5 +11,7 @@
 #include "deal.h"
 #include "utils.h"
 #include "uct.h"
+#include "myrandom.h"
+
 
 #endif

@@ -8,18 +8,107 @@ MyRandom Deal::a = MyRandom(time(NULL));
 //MyRandom Betterplayer::a = MyRandom(time(NULL));
 
 Deal *deal;
+Deal mydeal;
+DealSet deals;
+vector < set < int > > defendersCards;
+vector < int > noCardsEast, noCardsWest, possEast, possWest, whoseCards;
+
+void generate_deals(int eastCardsNum, int westCardsNum) {
+  MyRandom a(time(NULL));
+  int i, j, eastNum, westNum;
+  CardsSet cards = mydeal.getCards();
+  Trick tr = mydeal.getCurrentTrick();
+  int suit = mydeal.getContractSuit();
+  int level = mydeal.getContractLevel();
+  int whoNow = mydeal.getWhoNow();
+  int wonTricks = mydeal.getWonTricks();
+  vector < set < int > > eastCards, westCards;
+  set < int > allDefendersCards;
+  set < int >::iterator it;
+  
+  eastCards.resize(4);
+  westCards.resize(4);
+  
+  for (i = C; i <= Sp; i++) {
+    if (noCardsEast[i]) {
+      westCards[i] = defendersCards[i];
+      westCardsNum -= westCards[i].size();
+      continue;
+    }
+    if (noCardsWest[i]) {
+      eastCards[i] = defendersCards[i];
+      eastCardsNum -= eastCards[i].size();
+      continue;
+    }
+    allDefendersCards.insert(defendersCards[i].begin(), defendersCards[i].end());
+  }
+  
+  deals.resize(DEALS_NUM);
+  for (i = 0; i < DEALS_NUM; i++) {
+    cards[E] = eastCards;
+    cards[W] = westCards;
+    eastNum = eastCardsNum;
+    westNum = westCardsNum;
+    it = allDefendersCards.begin();
+    //printf("%d %d \n", eastNum, westNum);
+    while ((eastNum > 0) && (westNum > 0)) {
+      j = a.getRandomUint(possEast[*it]+possWest[*it]);
+      //printf("%d %d  ", j, *it);
+      if (j < possEast[*it]) { /* card in East hand */
+        cards[E][*it / 13].insert(*it);
+        eastNum--;
+      }
+      else { /* cards in West hand */
+        cards[W][*it / 13].insert(*it);
+        westNum--;
+      }
+      it++;
+    }
+    if (eastNum == 0)
+      while (it != allDefendersCards.end()) {
+        cards[W][*it / 13].insert(*it);
+        it++;
+      }
+    else
+      while (it != allDefendersCards.end()) {
+        cards[E][*it / 13].insert(*it);
+        it++;
+      }
+      
+    for (int s = C; s <= Sp; s++)  
+      for (it = cards[E][s].begin(); it != cards[E][s].end(); it++)
+        whoseCards[*it] = E;
+    for (int s = C; s <= Sp; s++)  
+      for (it = cards[W][s].begin(); it != cards[W][s].end(); it++)
+        whoseCards[*it] = W;
+        
+    deals[i] = new Deal(cards, tr, suit, level, wonTricks, whoNow, whoseCards);
+    //deals[i]->printDeal();
+  }
+  deal = deals[0];
+}
+
+
 
 int main()
 {
-  set <int> dummyCards, declarerCards, defendersCards;
   CardsSet cards;
-  int count, suit = NT, level = -1, cit = 0;
+  int eastCards = 13, westCards = 13;
+  
+  int count = 13, suit = NT, level = 3, wonTricks = 0, whoNow = 0;
   int num;
   Trick tr(0);
   
   cards.resize(4);
+  defendersCards.resize(4);
+  noCardsEast.resize(4);
+  noCardsWest.resize(4);
+  possEast.resize(52,1);
+  possWest.resize(52,1);
+  whoseCards.resize(52);
   for (int i = 0; i < 4; i++)
     cards[i].resize(4);
+    
   while (true) {
     char cmd[16];
     scanf("%s", cmd);
@@ -29,6 +118,7 @@ int main()
         scanf("%s", buf);
         num = changeCardToNumber(buf);
         cards[N][num / 13].insert(num);
+        whoseCards[num] = N;
       }
       printf("=\n\n");
     } 
@@ -38,10 +128,11 @@ int main()
         scanf("%s", buf);
         num = changeCardToNumber(buf);
         cards[S][num / 13].insert(num);
+        whoseCards[num] = S;
       }
       printf("=\n\n");
     }
-    else if (!strcmp(cmd, "set_east_cards")) {
+    /* else if (!strcmp(cmd, "set_east_cards")) {
       for (int i = 0; i < count; i++) {
         char buf[4];
         scanf("%s", buf);
@@ -58,55 +149,96 @@ int main()
         cards[W][num / 13].insert(num);
       }
       printf("=\n\n");
-    }
+    } */
     else if (!strcmp(cmd, "set_defenders_cards")) {
       defendersCards.clear();
       for (int i = 0; i < 2*count; i++) {
+        int c;
         char buf[4];
         scanf("%s", buf);
-        defendersCards.insert(changeCardToNumber(buf));
+        c = changeCardToNumber(buf);
+        defendersCards[c / 13].insert(c);
       }
-      //cards[1] = defendersCards;
       printf("=\n\n");
+      
     }
     else if (!strcmp(cmd, "auto_set_defenders_cards")) {
       vector < int > possibleCards;
       set < int >::iterator it;
-      
+      int i;
+
       possibleCards.resize(52);
-      for (it = dummyCards.begin(); it != dummyCards.end(); it++)
-        possibleCards[*it] = 1;  
-      for (it = declarerCards.begin(); it != declarerCards.end(); it++)
-        possibleCards[*it] = 1;
-        
-      defendersCards.clear();
-      for (int i = 0; i < 52; i++) {
+      for (i = C; i <= Sp; i++)
+        for (it = cards[N][i].begin(); it != cards[N][i].end(); it++)
+          possibleCards[*it] = 1;     
+      for (i = C; i <= Sp; i++)
+        for (it = cards[S][i].begin(); it != cards[S][i].end(); it++)
+          possibleCards[*it] = 1;     
+      
+      for (i = C; i <= Sp; i++)
+        defendersCards[i].clear();  
+      for (i = 0; i < 52; i++) {
         if (possibleCards[i] != 1)
-          defendersCards.insert(i);
+          defendersCards[ i / 13].insert(i);
       }
-      //cards[1] = defendersCards;
       printf("=\n\n");
     } // TODO
     else if (!strcmp(cmd, "gen_move")) {
       char c[2];
       int card;
       printf("w gen_move\n");
-      deal = new Deal(cards, tr, suit, level, 0, 3);
-      printf("stworzono deal\n");
-      UctTree tree = UctTree(1); //TODO
+      generate_deals(eastCards, westCards);      
+      printf("wygenerowano deals\n");
+      UctTree tree = UctTree(1, deals);
+      printf("uctTree\n");
       card = tree.genMove()->getCard();
-      printf("%s ", changeNumberToCard(card,c));
-      printf("\n");
-    } // TODO
+      printf("=%s ", changeNumberToCard(card,c));
+      printf("\n\n");
+    } 
+    else if (!strcmp(cmd, "start")) {
+      mydeal = Deal(cards, tr, suit, level, wonTricks, whoNow, whoseCards);
+      printf("=\n\n");
+    }
+    // TODO
     else if (!strcmp(cmd, "play")) {
-      char player[2], card[3];
-      scanf("%s %s", player, card);
+      char card[3];
+      scanf("%s", card);
       int c = changeCardToNumber(card);
-      deal->playUserCard(c);
+      int player = mydeal.getWhoNow();
+      mydeal.playUserCard(c); 
+      if ((c / 13) != mydeal.suitOfTrick()) {
+        if (player == E)
+          noCardsEast[mydeal.suitOfTrick() / 13] = 1;
+        else if (player == W)
+          noCardsWest[mydeal.suitOfTrick() / 13] = 1;
+      }
+      if (player == E)
+        eastCards--;
+      if (player == W)
+        westCards--;
+      printf("=\n\n");
     }
     else if (!strcmp(cmd, "set_board_size")) {
       scanf("%d", &count);
-      printf("\n");
+      eastCards = count;
+      westCards = count;
+      printf("=\n\n");
+    }
+    else if (!strcmp(cmd, "set_won_tricks")) {
+      scanf("%d", &wonTricks);
+      printf("=\n\n");
+    }
+    else if (!strcmp(cmd, "set_who_now")) {
+      char cont[4];
+      scanf("%s", cont);
+      switch (cont[0]) {
+        case 'E' : whoNow = E; break;
+        case 'N' : whoNow = N; break;
+        case 'W' : whoNow = W; break;
+        case 'S' : whoNow = S; break;
+        default : break;
+      }
+      printf("=\n\n");
     }
     else if (!strcmp(cmd, "set_contract")) {
       char cont[4];
@@ -120,26 +252,30 @@ int main()
         case 'N' : suit = NT; break;
         default : break;
       }
-      printf("\n");
+      printf("=\n\n");
     } 
     else if (!strcmp(cmd, "print_dummy_cards")) {
       char c[3];
+      int suit;
       set < int >::iterator it;
-      for (it = dummyCards.begin(); it != dummyCards.end(); it++)
-        printf("%s ", changeNumberToCard(*it, c));
+      for (suit = C; suit <= Sp; suit++)
+        for (it = cards[N][suit].begin(); it != cards[N][suit].end(); it++)
+          printf("%s ", changeNumberToCard(*it, c));
     }
     else if (!strcmp(cmd, "print_declarer_cards")) {
       char c[3];
+      int suit;
       set < int >::iterator it;
-      for (it = declarerCards.begin(); it != declarerCards.end(); it++)
-        printf("%s ", changeNumberToCard(*it, c));
+      for (suit = C; suit <= Sp; suit++)
+        for (it = cards[S][suit].begin(); it != cards[S][suit].end(); it++)
+          printf("%s ", changeNumberToCard(*it, c));
     }
-    else if (!strcmp(cmd, "print_defenders_cards")) {
+    /*else if (!strcmp(cmd, "print_defenders_cards")) {
       char c[3];
       set < int >::iterator it;
       for (it = defendersCards.begin(); it != defendersCards.end(); it++)
         printf("%s ", changeNumberToCard(*it, c));
-    }
+    }*/
     else if (!strcmp(cmd, "quit")) {
       break;
     }

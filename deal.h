@@ -38,7 +38,7 @@ class Deal
     Trick startTrick;
     CardsSet cards;
     std::vector < std::vector < int > > playedCards;
-    //std::vector < std::pair < int, int > > playedUctCards;
+    std::vector < int > whoseCards;
     int wonTricks;
     int startWonTricks;
     int contractSuit;
@@ -49,7 +49,7 @@ class Deal
     
   public:
     Deal() {};
-    Deal(CardsSet _cards, Trick _trick, int _suit, int _level, int _won, int _who) {
+    Deal(CardsSet _cards, Trick _trick, int _suit, int _level, int _won, int _who, std::vector < int > _whoseCards) {
       cards = _cards;
       currentTrick = _trick;
       startTrick = _trick;
@@ -60,6 +60,7 @@ class Deal
       whoNow = _who % 4;
       whoStarts = _who % 4;
       playedCards.resize(4);
+      whoseCards = _whoseCards;
       //playedUctCards.clear();
     };
     int getWonTricks();
@@ -94,6 +95,9 @@ class Deal
     void undoAllCards(); 
     void undoCard(int player, int card);
     bool endOfDeal(int player);
+    std::vector <int> getWhoseCards(); 
 };
+
+typedef std::vector <Deal*>  DealSet;
 
 #endif // __DEAL_H__
