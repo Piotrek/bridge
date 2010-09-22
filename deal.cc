@@ -349,41 +349,112 @@ int Deal::playTryToTakeThisTrick3(int who, int c1, int c2) {
 
 int Deal::playCard1(int who) {
   int index = a.getRandomUint(10), no_cards, suit = -1;
-  int c = 20, d = 20, h = 20, s = 20, part = (who + 2) % 4, opp1 = (who + 1) % 4, opp2 = (who + 3) % 4;
+  int c = 0, d = 0, h = 0, s = 0, part = (who + 2) % 4, opp1 = (who + 1) % 4, opp2 = (who + 3) % 4;
+  std::set<int>::iterator it;
 
   if ((contractSuit == NT) || (cards[(who + 1) % 4][contractSuit].empty()) || (cards[(who + 3) % 4][contractSuit].empty())) {
     
     if ((cards[opp1][C].empty()) && (cards[opp2][C].empty()) && (!cards[who][C].empty()))
-	  suit = C;
-	else if ((cards[opp1][D].empty()) && (cards[opp2][D].empty()) && (!cards[who][D].empty()))
-	  suit = D;
-	else if ((cards[opp1][H].empty()) && (cards[opp2][H].empty()) && (!cards[who][H].empty()))
-	  suit = H;
-	else if ((cards[opp1][S].empty()) && (cards[opp2][S].empty()) && (!cards[who][S].empty()))
-	  suit = S;
-	if ((suit != -1) && (index != 9)) return playDoNotBlock(who, suit);
+      suit = C;
+    else if ((cards[opp1][D].empty()) && (cards[opp2][D].empty()) && (!cards[who][D].empty()))
+      suit = D;
+    else if ((cards[opp1][H].empty()) && (cards[opp2][H].empty()) && (!cards[who][H].empty()))
+      suit = H;
+    else if ((cards[opp1][S].empty()) && (cards[opp2][S].empty()) && (!cards[who][S].empty()))
+      suit = S;
+    if ((suit != contractSuit) && (suit != -1) && (index != 9)) return playDoNotBlock(who, suit);
   }
   
   //jesli gramy w ba albo przeciwnicy nie maja atutow -> gramy w "swoje" kolory (dlugosc? punkty?)
   //jesli gramy a kolor i partner ma renons i ma atuty -> probujemy przebic
 
-  if (index > 6)
+  /* we took */
+  if (index != 9) {
+    if (currentTrick.whoWon(contractSuit) % 2 == 0) {
+      suit = suitOfTrick();
+      if (!cards[who][suit].empty())
+        return playDoNotBlock(who, suit);
+    }
+  }
+
+  if (index > 8)
     return playRandomCard(who);
     
-  if (!cards[who][C].empty())  
-	c = cards[opp1][C].size() + cards[opp2][C].size();
-  if (!cards[who][D].empty())
-    d = cards[opp1][D].size() + cards[opp2][D].size();
-  if (!cards[who][H].empty())
-	h = cards[opp1][H].size() + cards[opp2][H].size();
-  if (!cards[who][S].empty())
-	s = cards[opp1][S].size() + cards[opp2][S].size();
   
+    c = cards[who][C].size() + cards[part][C].size() - std::max(cards[opp1][C].size(), cards[opp2][C].size());
+    d = cards[who][D].size() + cards[part][D].size() - std::max(cards[opp1][D].size(), cards[opp2][D].size());
+    h = cards[who][H].size() + cards[part][H].size() - std::max(cards[opp1][H].size(), cards[opp2][H].size());
+    s = cards[who][S].size() + cards[part][S].size() - std::max(cards[opp1][S].size(), cards[opp2][S].size());
+   //std::cout<<"sredniindex c d h s contr "<<c<<" "<<d<<" "<<h<<" "<<s<<" "<<contractSuit<<std::endl;
+  
+    no_cards = 0;
+    if (contractSuit != C) { suit = C; no_cards = c; }
+    if ((d > no_cards) && (contractSuit != D)) { suit = D; no_cards = d; }
+    if ((h > no_cards) && (contractSuit != H)) { suit = H; no_cards = h; }
+    if ((s > no_cards) && (contractSuit != S)) { suit = S; no_cards = s; }
+   //std::cout<<"suit "<<suit<<std::endl;
+    return playRandomCardFromThisSuit(who, suit);
+  /*}*/
+  
+  for (it = cards[who][C].begin(); it != cards[who][C].end(); it++)
+    if ((*it) > 8) c += 2 * ((*it) % 13 + 1);
+    else c += (*it) % 13 + 1;
+  for (it = cards[part][C].begin(); it != cards[part][C].end(); it++)
+    if ((*it) > 8) c += 2 * ((*it) % 13 + 1);
+    else c += (*it) % 13 + 1;
+  for (it = cards[opp1][C].begin(); it != cards[opp1][C].end(); it++)
+    if ((*it) > 8) c -= 2 * ((*it) % 13 + 1);
+    else c -= (*it) % 13 + 1;
+  for (it = cards[opp2][C].begin(); it != cards[opp2][C].end(); it++)
+    if ((*it) > 8) c -= 2 * ((*it) % 13 + 1);
+    else c -= (*it) % 13 + 1;
+  
+  for (it = cards[who][D].begin(); it != cards[who][D].end(); it++)
+    if ((*it) > 8) d += 2 * ((*it) % 13 + 1);
+    else d += (*it) % 13 + 1;
+  for (it = cards[part][D].begin(); it != cards[part][D].end(); it++)
+    if ((*it) > 8) d += 2 * ((*it) % 13 + 1);
+    else d += (*it) % 13 + 1;
+  for (it = cards[opp1][D].begin(); it != cards[opp1][D].end(); it++)
+    if ((*it) > 8) d -= 2 * ((*it) % 13 + 1);
+    else d -= (*it) % 13 + 1;
+  for (it = cards[opp2][D].begin(); it != cards[opp2][D].end(); it++)
+    if ((*it) > 8) d -= 2 * ((*it) % 13 + 1);
+    else d -= (*it) % 13 + 1;
+  
+  for (it = cards[who][H].begin(); it != cards[who][H].end(); it++)
+    if ((*it) > 8) h += 2 * ((*it) % 13 + 1);
+    else h += (*it) % 13 + 1;
+  for (it = cards[part][H].begin(); it != cards[part][H].end(); it++)
+    if ((*it) > 8) h += 2 * ((*it) % 13 + 1);
+    else h += (*it) % 13 + 1;
+  for (it = cards[opp1][H].begin(); it != cards[opp1][H].end(); it++)
+    if ((*it) > 8) h -= 2 * ((*it) % 13 + 1);
+    else h -= (*it) % 13 + 1;
+  for (it = cards[opp2][H].begin(); it != cards[opp2][H].end(); it++)
+    if ((*it) > 8) h -= 2 * ((*it) % 13 + 1);
+    else h -= (*it) % 13 + 1;
+  
+  for (it = cards[who][S].begin(); it != cards[who][S].end(); it++)
+    if ((*it) > 8) s += 2 * ((*it) % 13 + 1);
+    else s += (*it) % 13 + 1;
+  for (it = cards[part][S].begin(); it != cards[part][S].end(); it++)
+    if ((*it) > 8) s += 2 * ((*it) % 13 + 1);
+    else s += (*it) % 13 + 1;
+  for (it = cards[opp1][S].begin(); it != cards[opp1][S].end(); it++)
+    if ((*it) > 8) s -= 2 * ((*it) % 13 + 1);
+    else s -= (*it) % 13 + 1;
+  for (it = cards[opp2][S].begin(); it != cards[opp2][S].end(); it++)
+    if ((*it) > 8) s -= 2 * ((*it) % 13 + 1);
+    else s -= (*it) % 13 + 1;
+  
+  //std::cout<<"malyindex c d h s contr "<<c<<" "<<d<<" "<<h<<" "<<s<<" "<<contractSuit<<std::endl;
   no_cards = 0;
   if (contractSuit != C) { suit = C; no_cards = c; }
-  if ((d < no_cards) && (contractSuit != D)) { suit = D; no_cards = d; }
-  if ((h < no_cards) && (contractSuit != H)) { suit = H; no_cards = h; }
-  if ((s < no_cards) && (contractSuit != S)) { suit = S; no_cards = s; }
+  if ((d > no_cards) && (contractSuit != D)) { suit = D; no_cards = d; }
+  if ((h > no_cards) && (contractSuit != H)) { suit = H; no_cards = h; }
+  if ((s > no_cards) && (contractSuit != S)) { suit = S; no_cards = s; }
+  //std::cout<<"suit "<<suit<<std::endl;
   return playRandomCardFromThisSuit(who, suit);
 }
 
