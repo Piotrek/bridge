@@ -15,8 +15,11 @@
 #define D 1
 #define C 0
 
+#define DEALS_NUM 10
+
 typedef std::vector < std::vector < std::set < int > > > CardsSet; 
 typedef std::vector < std::set < int > >  PlayerCardsSet; 
+
 
 int changeCardToNumber (char *c);
 char* changeNumberToCard (int num, char* c);

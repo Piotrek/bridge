@@ -18,11 +18,14 @@ float UctNode::playNum () {
 
 UctNode* UctNode::selectUCBChild () {
   ChildrenList::iterator it;
-  float ucb, maxUcb = 0;
+  float ucb, maxUcb = -1;
   float allPlayouts = playoutsStats.playNum();
   UctNode* bestNode;
-
+  std::vector < int > whoseCards = deal->getWhoseCards();
+  
   for (it = children.begin(); it != children.end(); it++) {
+    if (whoseCards[it->getCard()] != it->getPlayer())
+      continue;
     ucb = (*it).updateUcb(allPlayouts);
     if (ucb > maxUcb) {
       bestNode = &(*it);
@@ -48,8 +51,8 @@ UctNode* UctNode::selectBestChild () {
 }
 
 void UctNode::addChildren() {
-  int who, who2;
-  std::vector < std::set < int > > allCards;
+  int who, who2, suit;
+  std::vector < std::set < int > > allCards, allCards2;
   std::set < int > cards;
   std::set < int >::iterator it;
   UctNode* node;
@@ -57,15 +60,24 @@ void UctNode::addChildren() {
   expand = true;
   who = deal->getWhoNow();
   allCards = deal->getCards()[who];
-  if ((deal->getCardsInTrick() == 0) or (allCards[deal->suitOfTrick()].empty())) {
+  if (who % 2 == 0) {
+    allCards2 = deal->getCards()[(who + 2) % 4];
+    for (suit = C; suit <= Sp; suit++)
+      allCards[suit].insert(allCards2[suit].begin(), allCards2[suit].end());
     cards.clear();
     for (int i = 0; i < 4; i++)
-      cards.insert(allCards[i].begin(), allCards[i].end());
+      cards.insert(allCards[i].begin(), allCards[i].end());  
   }
   else {
-    cards = allCards[deal->suitOfTrick()];
+    if ((deal->getCardsInTrick() == 0) or (allCards[deal->suitOfTrick()].empty())) {
+      cards.clear();
+      for (int i = 0; i < 4; i++)
+        cards.insert(allCards[i].begin(), allCards[i].end());
+    }
+    else {
+      cards = allCards[deal->suitOfTrick()];
+    }
   }
-  
   for (it = cards.begin(); it != cards.end(); it++) {
     node = new UctNode(who, *it);
     if (deal->getCardsInTrick() == 3) {
@@ -104,7 +116,7 @@ float UctNode::statsMean() {
 void UctNode::printNode(int depth) {
   char c[3];
   
-  if (depth >= 4) return;
+  if (depth >= 2) return;
   for (int i = 0; i < depth; i++)
     fprintf(stderr, "   ");
   changeNumberToCard(getCard(), c); 
@@ -116,9 +128,9 @@ void UctNode::printNode(int depth) {
     it->printNode(depth + 1);
 }
 
-//TODO
 UctNode* UctTree::genMove() {
-  for (int i = 0; i < 10000000; i++) {
+  for (int i = 0; i < EXPLORE_NUM; i++) {
+    deal = deals[ i % DEALS_NUM ];
     //printf("%d\n", i);
     exploreTree();
   }
@@ -129,24 +141,27 @@ UctNode* UctTree::genMove() {
 void UctTree::exploreTree() {
   UctNode* node = &root;
   float playoutScore;
-  if (DEBUG) printf("nowe chodzenie po drzewie UCT\n");
+  if (DEBUG_UCT) printf("nowe chodzenie po drzewie UCT\n");
   movesHistory.clear();
   movesHistory.push_back(node);
-  if (DEBUG) printf("poki ma dzieci idziemy dalej\n");
+  if (DEBUG_UCT) printf("poki ma dzieci idziemy dalej\n");
   while (node->expanded()) {
+    if (DEBUG_UCT) printf("poki ma dzieci idziemy dalej1\n");
     node = node->selectUCBChild();
+    if (DEBUG_UCT) printf("poki ma dzieci idziemy dalej %d\n", node->getCard());
     deal->playCard(node->getCard());
+    if (DEBUG_UCT) printf("poki ma dzieci idziemy dalej3\n");
     movesHistory.push_back(node);
   }
 
-  if (DEBUG) printf("jesli juz wystarczajaco ruchow to rozbudowywujemy drzewo UCT\n");
+  if (DEBUG_UCT) printf("jesli juz wystarczajaco ruchow to rozbudowywujemy drzewo UCT\n");
   if (node->playNum() > MOVES_BEFORE_EXPAND) {
     node->addChildren();
     node = node->selectUCBChild();
     deal->playCard(node->getCard());
     movesHistory.push_back(node);
   }
-  if (DEBUG) printf("zapuszczamy playout\n");
+  if (DEBUG_UCT) printf("zapuszczamy playout\n");
   if (node->isLast()) {
     if (deal->getWonTricks() >= deal->getContractLevel() + 6)
       playoutScore = 1.0;
@@ -155,25 +170,25 @@ void UctTree::exploreTree() {
     movesHistory.pop_back();
   } 
   else {
-    if (DEBUG) printf("random_play\n");
+    if (DEBUG_UCT) printf("random_play\n");
     int tricksWon = deal->playRandomly();
-    if (DEBUG) printf("%d\n", tricksWon);
+    if (DEBUG_UCT) printf("%d\n", tricksWon);
     if (tricksWon >= deal->getContractLevel() + 6)
       playoutScore = 1.0;
     else
       playoutScore = 0.0;
   }
   
-  if (DEBUG) printf("uaktualniamy wezly dla ruchow ze sciezki\n");
+  if (DEBUG_UCT) printf("uaktualniamy wezly dla ruchow ze sciezki\n");
   for (int i = movesHistory.size()-1; i >= 1; i--) {
     movesHistory[i]->updateStats(playoutScore);
     deal->undoCard(movesHistory[i]->getPlayer(), movesHistory[i]->getCard());
   }
   movesHistory[0]->updateStats(playoutScore);
     
-  if (DEBUG) printf("cofamy wszystkie ruchy\n");
+  if (DEBUG_UCT) printf("cofamy wszystkie ruchy\n");
   deal->undoAllCards();
-  if (DEBUG) printf("ruchy wycofane\n");
+  if (DEBUG_UCT) printf("ruchy wycofane\n");
   
     
 }

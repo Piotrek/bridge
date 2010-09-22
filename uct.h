@@ -12,7 +12,8 @@
 #include "main.h"
 
 #define MOVES_BEFORE_EXPAND 100
-#define DEBUG 0
+#define DEBUG_UCT 0
+#define EXPLORE_NUM 10000000
 
 extern Deal *deal;
  
@@ -60,10 +61,14 @@ class UctTree {
   
   private:
     std::vector < UctNode* > movesHistory;
+    DealSet deals;
     UctNode root;
     
   public:
-    UctTree (int _player) : root(_player, 0) { root.addChildren(); };
+    UctTree (int _player, DealSet _deals) : root(_player, 0) {
+      deals = _deals;
+      root.addChildren();
+    };
     UctNode* selectBestMove();
     UctNode* genMove();
     void exploreTree();
