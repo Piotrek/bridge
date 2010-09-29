@@ -37,7 +37,7 @@ class Deal
     Trick currentTrick;
     Trick startTrick;
     CardsSet cards;
-    std::vector < std::vector < int > > playedCards;
+    std::vector < int > playedCards;
     std::vector < int > whoseCards;
     int wonTricks;
     int startWonTricks;
@@ -59,9 +59,7 @@ class Deal
       startWonTricks = _won;
       whoNow = _who % 4;
       whoStarts = _who % 4;
-      playedCards.resize(4);
       whoseCards = _whoseCards;
-      //playedUctCards.clear();
     };
     int getWonTricks();
     int getContractSuit();

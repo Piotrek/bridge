@@ -11,8 +11,8 @@
 #include "utils.h"
 #include "main.h"
 
-#define MOVES_BEFORE_EXPAND 100
-#define DEBUG_UCT 0
+#define MOVES_BEFORE_EXPAND 50
+#define DEBUG_UCT 1
 #define EXPLORE_NUM 10000000
 
 extern Deal *deal;
@@ -52,6 +52,7 @@ class UctNode {
     int getPlayer();
     float statsMean();
     void printNode(int depth);
+    int getChildrenSize();
 };
 
 

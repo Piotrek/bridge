@@ -51,7 +51,7 @@ UctNode* UctNode::selectBestChild () {
 }
 
 void UctNode::addChildren() {
-  int who, who2, suit;
+  int who, who2, suit, lastCard = -1;
   std::vector < std::set < int > > allCards, allCards2;
   std::set < int > cards;
   std::set < int >::iterator it;
@@ -79,6 +79,11 @@ void UctNode::addChildren() {
     }
   }
   for (it = cards.begin(); it != cards.end(); it++) {
+    if ((who % 2 == 1) && (*it == lastCard + 1) && (*it / 13 == lastCard / 13)) {
+      lastCard = *it;
+      continue;
+    }
+    lastCard = *it;    
     node = new UctNode(who, *it);
     if (deal->getCardsInTrick() == 3) {
       who2 = (who + 1) % 4;
@@ -128,11 +133,18 @@ void UctNode::printNode(int depth) {
     it->printNode(depth + 1);
 }
 
-//TODO
+int UctNode::getChildrenSize() {
+  return children.size();
+}
+
 UctNode* UctTree::genMove() {
+  if (root.getChildrenSize() == 1) {
+    printTree();
+    return root.selectUCBChild();
+  }
   for (int i = 0; i < EXPLORE_NUM; i++) {
     deal = deals[ i % DEALS_NUM ];
-    //printf("%d\n", i);
+    printf("%d\n", i);
     exploreTree();
   }
   printTree();

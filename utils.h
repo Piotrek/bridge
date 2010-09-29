@@ -15,7 +15,7 @@
 #define D 1
 #define C 0
 
-#define DEALS_NUM 10
+#define DEALS_NUM 1000
 
 typedef std::vector < std::vector < std::set < int > > > CardsSet; 
 typedef std::vector < std::set < int > >  PlayerCardsSet; 

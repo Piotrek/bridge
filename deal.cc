@@ -148,7 +148,7 @@ int Deal::playRandomSmallCard(int who, int trumps) {
     
   iter = cards[who][suit].begin();
   ret = *(iter);
-  playedCards[who].push_back(ret);
+  playedCards[ret] = who;
   cards[who][suit].erase(iter);
   return ret;
 }
@@ -162,7 +162,8 @@ int Deal::playLowestCardFromThisSuit(int who, int suit) {
 
   iter = cards[who][suit].begin();
   ret = *(iter);
-  playedCards[who].push_back(ret);
+  //playedCards[who].push_back(ret);
+  playedCards[ret] = who;
   cards[who][suit].erase(iter);
   return ret;
 }
@@ -180,7 +181,7 @@ int Deal::playTryToOverruff(int who, int suit, int card) {
     else break;
   if (iter != cards[who][suit].end()) { /* play the lowest higer trump */
     ret = *(iter);
-    playedCards[who].push_back(ret);
+    playedCards[ret] = who;
     cards[who][contractSuit].erase(iter);
     return ret;
   }
@@ -199,7 +200,7 @@ int Deal::playRandomCard(int who, int suit) {
     iter = cards[who][suit].begin();
     for (; index > 0; index--) iter++;
     ret = *(iter);
-    playedCards[who].push_back(ret);
+    playedCards[ret] = who;
     cards[who][suit].erase(iter);
     return ret;
   }
@@ -220,7 +221,7 @@ int Deal::playDoNotBlock (int who, int suit, int card) {
     if (iter != cards[who][suit].begin()) iter--;
   }
   ret = *(iter);
-  playedCards[who].push_back(ret);
+  playedCards[ret] = who;
   cards[who][suit].erase(iter);
   return ret;
 }
@@ -236,7 +237,7 @@ int Deal::playTheLowestHigherCard(int who, int suit, int card) {
   if (iter == cards[who][suit].end())
     iter = cards[who][suit].begin();
   ret = *(iter);
-  playedCards[who].push_back(*iter);
+  playedCards[ret] = who;
   cards[who][suit].erase(iter);
   return ret;
 }
@@ -320,7 +321,7 @@ int Deal::playTryToTakeThisTrick3(int who, int c1, int c2) {
     if (DEBUG) fprintf(stderr, "playTryToTake38\n"); 
   
   ret = *(iter);
-  playedCards[who].push_back(*iter);
+  playedCards[ret] = who;
   cards[who][suit1].erase(iter);
   return ret;
 }
@@ -342,7 +343,7 @@ int Deal::playCard1(int who) {
   iter = cards[who][set_num].begin();
   for (; card > 0; card--) iter++;
   ret = *(iter);
-  playedCards[who].push_back(ret);
+  playedCards[ret] = who;
   cards[who][set_num].erase(iter);
   return ret;
 }
@@ -357,7 +358,7 @@ int Deal::playCard2(int who, int c1) {
     if (index < (int) cards[who][suit].size()) /* with prob 50% we play lowest card */
        for (; index > 0; index--) iter++;
     ret = *(iter);
-    playedCards[who].push_back(ret);
+    playedCards[ret] = who;
     cards[who][suit].erase(iter);
     return ret;
   }
@@ -365,7 +366,7 @@ int Deal::playCard2(int who, int c1) {
   index = a.getRandomUint(2); /* with prob 50% we ruff */
   if ((index == 0) && (contractSuit < 4) && (!cards[who][contractSuit].empty())) {
     ret = *(cards[who][contractSuit].begin());
-    playedCards[who].push_back(ret);
+    playedCards[ret] = who;
     cards[who][contractSuit].erase(cards[who][contractSuit].begin());
     return ret;
   }
@@ -455,7 +456,7 @@ int Deal::playCard3(int who, int c1, int c2) {
   iter = cards[who][contractSuit].begin();
   for (; (iter != cards[who][contractSuit].end()) && ((*iter < c4_l) || (*iter > c2)); iter++) {}
   ret = *(iter);
-  playedCards[who].push_back(*iter);
+  playedCards[ret] = who;
   cards[who][contractSuit].erase(iter);
   
   if (DEBUG) fprintf(stderr, "playCard39\n");
@@ -488,7 +489,7 @@ int Deal::playCard4(int who, int c1, int c2, int c3) {
         iter = cards[who][suit].begin();
     }
     ret = *(iter);
-    playedCards[who].push_back(*iter);
+    playedCards[ret] = who;
     cards[who][suit].erase(iter);
     return ret;
   }
@@ -528,8 +529,7 @@ int Deal::playRandomly() {
   int lastWinner = (4 + whoNow - getCardsInTrick()) % 4;
   std::vector<int>::iterator iter;
   
-  for (i = 0; i < 4; i++)
-    playedCards[i].clear();
+  playedCards.resize(52,5);
   
   if (getCardsInTrick() > 0) {
     if (getCardsInTrick() == 1) {
@@ -572,22 +572,14 @@ int Deal::playRandomly() {
     //currentTrick.printTrickSymbols();
   }
   
-  for(i = 0; i < 4; i++)
-    for (iter = playedCards[i].begin(); iter != playedCards[i].end(); iter++)
-      cards[i][(*iter / 13)].insert(*iter);
+  for (i = 0; i < 52; i++)
+    if (playedCards[i] != 5)
+      cards[playedCards[i]][i/13].insert(i);
   
   return tricksWon;
 }
 
 void Deal::undoAllCards() {
-  //int i;
-  //std::vector< std::pair <int, int> >::iterator iter;
-  
-  //for (iter = playedUctCards.begin(); iter != playedUctCards.end(); iter++)
-  //    cards[iter->first][(iter->second / 13)].insert(iter->second);
-      
-  //playedUctCards.clear();
-      
   currentTrick = startTrick;
   whoNow = whoStarts;
   wonTricks = startWonTricks;          

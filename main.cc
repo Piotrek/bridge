@@ -4,8 +4,6 @@
 using namespace std;
 
 MyRandom Deal::a = MyRandom(time(NULL));
-//MyRandom Dummyplayer::a = MyRandom(time(NULL));
-//MyRandom Betterplayer::a = MyRandom(time(NULL));
 
 Deal *deal;
 Deal mydeal;
@@ -13,9 +11,11 @@ DealSet deals;
 vector < set < int > > defendersCards;
 vector < int > noCardsEast, noCardsWest, possEast, possWest, whoseCards;
 
+
+/* function generating random East-West hands */
 void generate_deals(int eastCardsNum, int westCardsNum) {
   MyRandom a(time(NULL));
-  int i, j, eastNum, westNum;
+  int i, j, k, eastNum, westNum;
   CardsSet cards = mydeal.getCards();
   Trick tr = mydeal.getCurrentTrick();
   int suit = mydeal.getContractSuit();
@@ -23,12 +23,13 @@ void generate_deals(int eastCardsNum, int westCardsNum) {
   int whoNow = mydeal.getWhoNow();
   int wonTricks = mydeal.getWonTricks();
   vector < set < int > > eastCards, westCards;
-  set < int > allDefendersCards;
+  set < int > allDefendersCards, allDefendersCards2;
   set < int >::iterator it;
   
   eastCards.resize(4);
   westCards.resize(4);
   
+  /* maybe distribution of some suits is known */
   for (i = C; i <= Sp; i++) {
     if (noCardsEast[i]) {
       westCards[i] = defendersCards[i];
@@ -40,20 +41,27 @@ void generate_deals(int eastCardsNum, int westCardsNum) {
       eastCardsNum -= eastCards[i].size();
       continue;
     }
-    allDefendersCards.insert(defendersCards[i].begin(), defendersCards[i].end());
+    allDefendersCards2.insert(defendersCards[i].begin(), defendersCards[i].end());
   }
   
+  /* creating sample deals */
   deals.resize(DEALS_NUM);
   for (i = 0; i < DEALS_NUM; i++) {
     cards[E] = eastCards;
     cards[W] = westCards;
     eastNum = eastCardsNum;
     westNum = westCardsNum;
-    it = allDefendersCards.begin();
-    //printf("%d %d \n", eastNum, westNum);
+    allDefendersCards = allDefendersCards2;
     while ((eastNum > 0) && (westNum > 0)) {
+      
+      /* random card */
+      it = allDefendersCards.begin();
+      j = a.getRandomUint(allDefendersCards.size());
+      for (k = 0; k < j; k++)
+        it++;
+      //char buf[4]; printf("%d %d %s", eastNum, westNum, changeNumberToCard(*it, buf));  
+      /* random hand */
       j = a.getRandomUint(possEast[*it]+possWest[*it]);
-      //printf("%d %d  ", j, *it);
       if (j < possEast[*it]) { /* card in East hand */
         cards[E][*it / 13].insert(*it);
         eastNum--;
@@ -62,8 +70,10 @@ void generate_deals(int eastCardsNum, int westCardsNum) {
         cards[W][*it / 13].insert(*it);
         westNum--;
       }
-      it++;
+      allDefendersCards.erase(*it);
     }
+    /* rest of cards */
+    it = allDefendersCards.begin();
     if (eastNum == 0)
       while (it != allDefendersCards.end()) {
         cards[W][*it / 13].insert(*it);
@@ -74,7 +84,7 @@ void generate_deals(int eastCardsNum, int westCardsNum) {
         cards[E][*it / 13].insert(*it);
         it++;
       }
-      
+    /* set whoseCards - used to select good cards in selectUCBChild */   
     for (int s = C; s <= Sp; s++)  
       for (it = cards[E][s].begin(); it != cards[E][s].end(); it++)
         whoseCards[*it] = E;
@@ -83,9 +93,9 @@ void generate_deals(int eastCardsNum, int westCardsNum) {
         whoseCards[*it] = W;
         
     deals[i] = new Deal(cards, tr, suit, level, wonTricks, whoNow, whoseCards);
-    //deals[i]->printDeal();
   }
-  deal = deals[0];
+  deal = deals[0]; /* needed to initialized UCTTree - root.addChildren */
+  
 }
 
 
@@ -132,24 +142,6 @@ int main()
       }
       printf("=\n\n");
     }
-    /* else if (!strcmp(cmd, "set_east_cards")) {
-      for (int i = 0; i < count; i++) {
-        char buf[4];
-        scanf("%s", buf);
-        num = changeCardToNumber(buf);
-        cards[E][num / 13].insert(num);
-      }
-      printf("=\n\n");
-    }
-    else if (!strcmp(cmd, "set_west_cards")) {
-      for (int i = 0; i < count; i++) {
-        char buf[4];
-        scanf("%s", buf);
-        num = changeCardToNumber(buf);
-        cards[W][num / 13].insert(num);
-      }
-      printf("=\n\n");
-    } */
     else if (!strcmp(cmd, "set_defenders_cards")) {
       defendersCards.clear();
       for (int i = 0; i < 2*count; i++) {
@@ -160,7 +152,6 @@ int main()
         defendersCards[c / 13].insert(c);
       }
       printf("=\n\n");
-      
     }
     else if (!strcmp(cmd, "auto_set_defenders_cards")) {
       vector < int > possibleCards;
@@ -182,15 +173,12 @@ int main()
           defendersCards[ i / 13].insert(i);
       }
       printf("=\n\n");
-    } // TODO
+    }
     else if (!strcmp(cmd, "gen_move")) {
       char c[2];
       int card;
-      printf("w gen_move\n");
-      generate_deals(eastCards, westCards);      
-      printf("wygenerowano deals\n");
+      generate_deals(eastCards, westCards);
       UctTree tree = UctTree(1, deals);
-      printf("uctTree\n");
       card = tree.genMove()->getCard();
       printf("=%s ", changeNumberToCard(card,c));
       printf("\n\n");
@@ -199,9 +187,9 @@ int main()
       mydeal = Deal(cards, tr, suit, level, wonTricks, whoNow, whoseCards);
       printf("=\n\n");
     }
-    // TODO
     else if (!strcmp(cmd, "play")) {
       char card[3];
+      set < int >::iterator it;
       scanf("%s", card);
       int c = changeCardToNumber(card);
       int player = mydeal.getWhoNow();
@@ -211,6 +199,22 @@ int main()
           noCardsEast[mydeal.suitOfTrick() / 13] = 1;
         else if (player == W)
           noCardsWest[mydeal.suitOfTrick() / 13] = 1;
+      }
+      if (player % 2 == 0) {
+        /* change probability of adjacent cards */
+        if (defendersCards[c/13].find(c+1) != defendersCards[c/13].end()) {
+          if (player == E)
+            possWest[c+1] *= 2;
+          if (player == W)
+            possEast[c+1] *= 2;
+        }
+        if (defendersCards[c/13].find(c-1) != defendersCards[c/13].end()) {
+          if (player == E)
+            possWest[c-1] *= 2;
+          if (player == W)
+            possEast[c-1] *= 2;
+        }
+        defendersCards[c / 13].erase(c);
       }
       if (player == E)
         eastCards--;
@@ -270,16 +274,10 @@ int main()
         for (it = cards[S][suit].begin(); it != cards[S][suit].end(); it++)
           printf("%s ", changeNumberToCard(*it, c));
     }
-    /*else if (!strcmp(cmd, "print_defenders_cards")) {
-      char c[3];
-      set < int >::iterator it;
-      for (it = defendersCards.begin(); it != defendersCards.end(); it++)
-        printf("%s ", changeNumberToCard(*it, c));
-    }*/
     else if (!strcmp(cmd, "quit")) {
       break;
     }
-    else { // wrong command
+    else { /* wrong command */
       scanf("%*[^\n]");
       printf("? wrong command `%s'\n\n", cmd);
     }
