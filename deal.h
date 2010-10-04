@@ -95,6 +95,7 @@ class Deal
     void undoAllCards(); 
     void undoCard(int player, int card);
     bool endOfDeal(int player);
+    bool isVoid(int player, int suit);
     std::vector <int> getWhoseCards(); 
 };
 

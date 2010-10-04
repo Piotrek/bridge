@@ -12,8 +12,8 @@
 #include "main.h"
 
 #define MOVES_BEFORE_EXPAND 50
-#define DEBUG_UCT 1
-#define EXPLORE_NUM 10000000
+#define DEBUG_UCT 0
+#define EXPLORE_NUM 1000000
 
 extern Deal *deal;
  

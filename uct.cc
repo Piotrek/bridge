@@ -17,15 +17,23 @@ float UctNode::playNum () {
 }	
 
 UctNode* UctNode::selectUCBChild () {
-  ChildrenList::iterator it;
+  ChildrenList::iterator it = children.begin();
   float ucb, maxUcb = -1;
   float allPlayouts = playoutsStats.playNum();
   UctNode* bestNode;
   std::vector < int > whoseCards = deal->getWhoseCards();
+  int suit = deal->suitOfTrick();
+  int cards = deal->getCardsInTrick();
+  int whoPlay = it->getPlayer();
   
-  for (it = children.begin(); it != children.end(); it++) {
-    if (whoseCards[it->getCard()] != it->getPlayer())
-      continue;
+  for (; it != children.end(); it++) {
+    if (whoPlay % 2 == 0) {
+      if (whoseCards[it->getCard()] != whoPlay)
+        continue;
+      if (!deal->isVoid(whoPlay, suit))  
+        if ((it->getCard() / 13 != suit) && (cards != 0))
+          continue;
+      }
     ucb = (*it).updateUcb(allPlayouts);
     if (ucb > maxUcb) {
       bestNode = &(*it);
@@ -37,7 +45,7 @@ UctNode* UctNode::selectUCBChild () {
 
 UctNode* UctNode::selectBestChild () {
   ChildrenList::iterator it;
-  float mean, maxMean = 0;
+  float mean, maxMean = -1;
   UctNode* bestNode;
 
   for (it = children.begin(); it != children.end(); it++) {
@@ -51,7 +59,7 @@ UctNode* UctNode::selectBestChild () {
 }
 
 void UctNode::addChildren() {
-  int who, who2, suit, lastCard = -1;
+  int who, who2, suit, lastCard = 53;
   std::vector < std::set < int > > allCards, allCards2;
   std::set < int > cards;
   std::set < int >::iterator it;
@@ -144,7 +152,7 @@ UctNode* UctTree::genMove() {
   }
   for (int i = 0; i < EXPLORE_NUM; i++) {
     deal = deals[ i % DEALS_NUM ];
-    printf("%d\n", i);
+    //fprintf(stderr, "%d\n", i);
     exploreTree();
   }
   printTree();
@@ -159,11 +167,8 @@ void UctTree::exploreTree() {
   movesHistory.push_back(node);
   if (DEBUG_UCT) printf("poki ma dzieci idziemy dalej\n");
   while (node->expanded()) {
-    if (DEBUG_UCT) printf("poki ma dzieci idziemy dalej1\n");
     node = node->selectUCBChild();
-    if (DEBUG_UCT) printf("poki ma dzieci idziemy dalej %d\n", node->getCard());
     deal->playCard(node->getCard());
-    if (DEBUG_UCT) printf("poki ma dzieci idziemy dalej3\n");
     movesHistory.push_back(node);
   }
 
@@ -202,8 +207,6 @@ void UctTree::exploreTree() {
   if (DEBUG_UCT) printf("cofamy wszystkie ruchy\n");
   deal->undoAllCards();
   if (DEBUG_UCT) printf("ruchy wycofane\n");
-  
-    
 }
 
 UctNode* UctTree::selectBestMove () {

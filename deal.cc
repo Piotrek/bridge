@@ -225,7 +225,7 @@ int Deal::playRandomCard(int who) {
   iter = cards[who][set_num].begin();
   for (; card > 0; card--) iter++;
   ret = *(iter);
-  playedCards[who].push_back(ret);
+  playedCards[ret]= who;
   cards[who][set_num].erase(iter);
   return ret;
 }
@@ -255,12 +255,16 @@ int Deal::playTheLowestHigherCard(int who, int suit, int card) {
  
   if (DEBUG) fprintf(stderr, "playTheLowestHigher\n"); 
     
-  for (; (iter != cards[who][suit].end()) && (*iter < card); iter++) {}
+  for (; ((iter != cards[who][suit].end()) && (*iter < card)); iter++) {}
+  if (DEBUG) fprintf(stderr, "playTheLowestHigher2\n"); 
   if (iter == cards[who][suit].end())
     iter = cards[who][suit].begin();
+  if (DEBUG) fprintf(stderr, "playTheLowestHigher3\n"); 
   ret = *(iter);
   playedCards[ret] = who;
+  if (DEBUG) fprintf(stderr, "playTheLowestHigher4 %d \n", ret); 
   cards[who][suit].erase(iter);
+  if (DEBUG) fprintf(stderr, "playTheLowestHigher - koniec\n"); 
   return ret;
 }
     
@@ -520,7 +524,7 @@ int Deal::playCard3(int who, int c1, int c2) {
     
   if (DEBUG) fprintf(stderr, "playCard34\n");
     
-  if (cards[who][suit2].empty()) /* player can't ruff */
+  if (cards[who][contractSuit].empty()) /* player can't ruff */
     return playRandomSmallCard(who, contractSuit);
   
   if (DEBUG) fprintf(stderr, "playCard35\n");
@@ -549,28 +553,34 @@ int Deal::playCard3(int who, int c1, int c2) {
   if (DEBUG) fprintf(stderr, "playCard37\n");
   
   
-  if ((c3 > c4) && (!(suit2 == contractSuit) || (c3 > c2))) /* play the lowest higher card */
-    return playTheLowestHigherCard(who, suit1, std::max(c2, c4));
-  if (c3 > c4) /* c3 < c2 */
+  if ((c3 > c4) && !(suit2 == contractSuit)) /* play the lowest higher card */
+    return playTheLowestHigherCard(who, contractSuit, c4);
+  if ((c3 > c4) && (c3 > c2))
+    return playTheLowestHigherCard(who, contractSuit, std::max(c2,c4));
+  if ((suit2 == contractSuit) && (c2 > c3)) /* can't overruff */
     return playRandomSmallCard(who, contractSuit);
   
   if (DEBUG) fprintf(stderr, "playCard38\n");
     
-  
   /* c4 > c2 (or c2 not a trump) and c4 > c3 */
   iter = cards[nextpl][contractSuit].end(); iter--;
   for (; (iter != cards[nextpl][contractSuit].begin()) && (*iter > c3); iter--) {}
-  if (*iter < c3) c4_h = c4;
-  else c4_h = *iter;
+  if (DEBUG) fprintf(stderr, "playCard39\n");
+  /* if (*iter < c3) c4_h = c4;
+  else c4_h = *iter; */
   c4_l = 0;
-  if (iter != cards[nextpl][contractSuit].begin()) { iter--; c4_l = *iter; }  
+  if (iter != cards[nextpl][contractSuit].begin())
+   c4_l = *iter;  
   iter = cards[who][contractSuit].begin();
-  for (; (iter != cards[who][contractSuit].end()) && ((*iter < c4_l) || (*iter > c2)); iter++) {}
+  if (DEBUG) fprintf(stderr, "playCard310\n");
+  for (; (iter != cards[who][contractSuit].end()) && ((*iter < c4_l) || (*iter < c2)); iter++) {}
+  if (iter == cards[who][contractSuit].end())
+    iter = cards[who][contractSuit].begin();
   ret = *(iter);
   playedCards[ret] = who;
   cards[who][contractSuit].erase(iter);
   
-  if (DEBUG) fprintf(stderr, "playCard39\n");
+  if (DEBUG) fprintf(stderr, "playCard311\n");
   
   return ret;
 }
@@ -640,6 +650,7 @@ int Deal::playRandomly() {
   int lastWinner = (4 + whoNow - getCardsInTrick()) % 4;
   std::vector<int>::iterator iter;
   
+  if (DEBUG) printDeal();
   playedCards.resize(52,5);
   
   if (getCardsInTrick() > 0) {
@@ -657,7 +668,7 @@ int Deal::playRandomly() {
       currentTrick.playCard(playCard4((lastWinner + 3) % 4, currentTrick.firstCard(), currentTrick.getCard(1), currentTrick.getCard(2)));
     }
     lastWinner = (lastWinner + currentTrick.whoWon(contractSuit)) % 4;
-    wonTricks += (lastWinner % 2);
+    tricksWon += (lastWinner % 2);
     //currentTrick.printTrickSymbols();
   }
     
@@ -680,7 +691,6 @@ int Deal::playRandomly() {
     
     lastWinner = (lastWinner + currentTrick.whoWon(contractSuit)) % 4;
     tricksWon += (lastWinner % 2);
-    //currentTrick.printTrickSymbols();
   }
   
   for (i = 0; i < 52; i++)
@@ -731,4 +741,8 @@ bool Deal::endOfDeal(int player) {
 
 std::vector <int> Deal::getWhoseCards() {
   return whoseCards; 
+}
+
+bool Deal::isVoid(int player, int suit) {
+  return cards[player][suit].empty();
 }
