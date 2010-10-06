@@ -1,6 +1,6 @@
 set_board_size 13
 
-set_contract 4H
+set_contract 3NT
 
 set_dummy_cards 
 S5
@@ -39,13 +39,11 @@ start
 play SK
 play S4
 play S6
-gen_move
 play S2
 
 play SQ
 play S5
 play S7
-gen_move
 play S3
 
 play SJ
@@ -70,11 +68,9 @@ play H6
 
 play HK
 play D2
-gen_move
 play CJ
 play D4
 
-gen_move
 play D6
 play DA
 play DT

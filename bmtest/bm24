@@ -68,7 +68,7 @@ gen_move
 play DA
 play D8
 play D5
-play D3
+play D6
 
 gen_move
 play D2

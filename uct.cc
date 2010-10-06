@@ -185,6 +185,7 @@ void UctTree::exploreTree() {
       playoutScore = 1.0;
     else
       playoutScore = 0.0;
+    deal->undoCard(node->getPlayer(), node->getCard()); 
     movesHistory.pop_back();
   } 
   else {

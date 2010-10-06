@@ -39,6 +39,13 @@ play DQ
 play D3
 play D6
 play DA
+
+gen_move
+play CA
+play C7
+play C8
+play C4
+
 gen_move
 
 quit

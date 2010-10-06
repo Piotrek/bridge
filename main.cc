@@ -196,9 +196,9 @@ int main()
       mydeal.playUserCard(c); 
       if ((c / 13) != mydeal.suitOfTrick()) {
         if (player == E)
-          noCardsEast[mydeal.suitOfTrick() / 13] = 1;
+          noCardsEast[mydeal.suitOfTrick()] = 1;
         else if (player == W)
-          noCardsWest[mydeal.suitOfTrick() / 13] = 1;
+          noCardsWest[mydeal.suitOfTrick()] = 1;
       }
       if (player % 2 == 0) {
         /* change probability of adjacent cards */

@@ -43,5 +43,16 @@ play HA
 play C2
 play C5
 gen_move
+play C8
+play CQ
+
+play DQ
+play DA
+play D6
+play D4
+
+play C3
+play C6
+gen_move
 
 quit
