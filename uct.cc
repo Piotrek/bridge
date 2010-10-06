@@ -26,6 +26,8 @@ UctNode* UctNode::selectUCBChild () {
   int cards = deal->getCardsInTrick();
   int whoPlay = it->getPlayer();
   
+  if (DEBUG_UCT) printf("selectUCBChild\n");
+  
   for (; it != children.end(); it++) {
     if (whoPlay % 2 == 0) {
       if (whoseCards[it->getCard()] != whoPlay)
@@ -64,6 +66,8 @@ void UctNode::addChildren() {
   std::set < int > cards;
   std::set < int >::iterator it;
   UctNode* node;
+  
+  if (DEBUG_UCT) printf("addChildren\n");
   
   expand = true;
   who = deal->getWhoNow();
@@ -152,7 +156,6 @@ UctNode* UctTree::genMove() {
   }
   for (int i = 0; i < EXPLORE_NUM; i++) {
     deal = deals[ i % DEALS_NUM ];
-    //fprintf(stderr, "%d\n", i);
     exploreTree();
   }
   printTree();
@@ -162,7 +165,9 @@ UctNode* UctTree::genMove() {
 void UctTree::exploreTree() {
   UctNode* node = &root;
   float playoutScore;
+  
   if (DEBUG_UCT) printf("nowe chodzenie po drzewie UCT\n");
+  
   movesHistory.clear();
   movesHistory.push_back(node);
   if (DEBUG_UCT) printf("poki ma dzieci idziemy dalej\n");
@@ -185,6 +190,7 @@ void UctTree::exploreTree() {
       playoutScore = 1.0;
     else
       playoutScore = 0.0;
+    deal->undoCard(node->getPlayer(), node->getCard());  
     movesHistory.pop_back();
   } 
   else {

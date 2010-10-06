@@ -39,11 +39,13 @@ start
 play SK
 play S4
 play S6
+gen_move
 play S2
 
 play SQ
 play S5
 play S7
+gen_move
 play S3
 
 play SJ
@@ -71,6 +73,7 @@ play D2
 play CJ
 play D4
 
+gen_move
 play D6
 play DA
 play DT

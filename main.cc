@@ -196,9 +196,9 @@ int main()
       mydeal.playUserCard(c); 
       if ((c / 13) != mydeal.suitOfTrick()) {
         if (player == E)
-          noCardsEast[mydeal.suitOfTrick() / 13] = 1;
+          noCardsEast[mydeal.suitOfTrick()] = 1;
         else if (player == W)
-          noCardsWest[mydeal.suitOfTrick() / 13] = 1;
+          noCardsWest[mydeal.suitOfTrick()] = 1;
       }
       if (player % 2 == 0) {
         /* change probability of adjacent cards */
@@ -258,22 +258,7 @@ int main()
       }
       printf("=\n\n");
     } 
-    else if (!strcmp(cmd, "print_dummy_cards")) {
-      char c[3];
-      int suit;
-      set < int >::iterator it;
-      for (suit = C; suit <= Sp; suit++)
-        for (it = cards[N][suit].begin(); it != cards[N][suit].end(); it++)
-          printf("%s ", changeNumberToCard(*it, c));
-    }
-    else if (!strcmp(cmd, "print_declarer_cards")) {
-      char c[3];
-      int suit;
-      set < int >::iterator it;
-      for (suit = C; suit <= Sp; suit++)
-        for (it = cards[S][suit].begin(); it != cards[S][suit].end(); it++)
-          printf("%s ", changeNumberToCard(*it, c));
-    }
+    
     else if (!strcmp(cmd, "quit")) {
       break;
     }

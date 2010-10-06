@@ -12,7 +12,7 @@
 
 
 
-#define DEBUG 0
+#define DEBUG_DEAL 0
 
 class Trick
 {

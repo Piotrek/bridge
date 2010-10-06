@@ -3,6 +3,7 @@
 
 #include <cstdio>
 #include <cmath>
+#include <algorithm>
 
 #define STALA_UCB 1.0
 #define START_UCB 100.0
@@ -13,7 +14,6 @@ private:
   
   float playoutsNum;
   float playoutsScore;
-  float squarePlayoutsScore;
   float ucb;
 
 public:
@@ -21,7 +21,6 @@ public:
   Stats () {
     playoutsNum = 0.0;
     playoutsScore = 0.0;
-    squarePlayoutsScore = 0.0;
     ucb = 100.0;
   }
   
@@ -29,7 +28,6 @@ public:
   void resetStats ();
   void update (float playoutScore);
   float mean ();
-  float variance ();
   float updateUcb (float allPlayouts);
   float getPlayoutsScore() {return playoutsScore; };
 };

@@ -13,5 +13,4 @@
 #include "uct.h"
 #include "myrandom.h"
 
-
 #endif
