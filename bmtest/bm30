@@ -1,0 +1,79 @@
+set_board_size 13
+
+set_contract 3NT
+
+set_dummy_cards 
+S3
+S2
+H5
+DQ
+DJ
+DT
+D9
+D8
+D7
+D6
+CK
+C3
+C2
+
+set_declarer_cards
+SK
+SQ
+S5
+S4
+HA
+H4
+H3
+H2
+DA
+D3
+D2
+CA
+CJ
+
+
+auto_set_defenders_cards
+start
+play CT
+gen_move
+play C2
+play C6
+gen_move
+play CA
+
+gen_move
+play DA
+play D4
+play D6
+play C4
+
+gen_move
+play D2
+play D5
+play D7
+play C5
+
+gen_move
+play D8
+play C7
+play D3
+play DK
+
+play HQ
+play H5
+play H6
+gen_move
+play HA
+
+gen_move
+play CJ
+play CQ
+gen_move
+play CK
+play S9
+
+gen_move
+play D9
+
+quit

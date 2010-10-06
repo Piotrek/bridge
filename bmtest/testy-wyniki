@@ -1,0 +1,52 @@
+BM21
+
+problem: bijemy asem pik, atuty, karo dołem (Akxxx do xxx)
+wynik: as pik, atut, karo (był dwa razy lepszy od atuta - ???), znów atut, a potem jak oni już nie mają atuta, to niby atut, ale karo jest prawie tak samo dobre, potem się zawiesza
+------------------------------------------------------------
+BM22			+++
+
+problem: mamy xxx do xx w kierach, trzeba przebić jednego kiera na 4pik
+wynik: gra w karo (karo ma 61%, kier 57%, inne też dużo, poza atutem), a może to i lepiej, bo jak się kiery nie dzielą, to najpierw odbieramy kara, a potem przebija
+------------------------------------------------------------
+BM23
+
+problem: 3 razy puszczamy, potem w dobry kolor, potem nie impasujemy
+wynik: puścił raz, zabił asem, potem segmentation fault
+------------------------------------------------------------
+BM24
+
+problem: gra na obustronne przebitki
+wynik: przez pierwsze pięć lew idelanie, ale potem się zawiesił :( i tak dwa razy, może 23 i 24 to błędy z testami?
+------------------------------------------------------------
+BM25
+
+problem: jedyna szansa na wygranie kontraktu to stojący król
+wynik: mały trefl miał szansę na wygranie 0.435644, jak kazaliśmy zagrć małe z ręki, to z K2 zagrał K!!
+------------------------------------------------------------
+BM26
+
+problem: wyrabiamy boczny kolor, zanim oni dojdą na atuty i ściągną fortę
+wynik: źle, zaczął od ściągnięcia zatrzymania w kolorze, w którym oni wyrabiają fortę
+ale jak się go przymusi, to potem wyrzuca losera, a potem gra w atu ->
+------------------------------------------------------------
+BM27
+
+problem: mamy Kxx do Txx, wistują D
+wynik: zabił królem, jak mu każemy puścić, to też kładzie króla
+koment: aj aj aj, ale nie miał szans :/ bo on wie, gdzie jest dama :/
+------------------------------------------------------------
+BM29
+
+problem: bezdojściowe AKDxxx do xx
+wynik: gra górą (małe daje 21%, figura 51%), źle
+------------------------------------------------------------
+BM30
+
+problem: Kxx do AJ sec, bijemy asem, bo K to jedyne dojście do fort
+wynik: ze stołu małe, a nie król, ale z ręki walet, potem A karo i karo, ale po wzięciu w pika :/ (odrobinkę więcej, ale karo powinno być 100%), ale potem zabija od razu kiera (dobrze!), dochodzi do stołu i zgrywa forty
+------------------------------------------------------------
+BM32
+
+problem: na 3NT singlową damę przejmujemy asem i gramy w ten kolor, oddając na króla
+wynik:
+------------------------------------------------------------
