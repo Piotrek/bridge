@@ -46,4 +46,7 @@ play S6
 play SK
 
 gen_move
+play H8
+play H6
+gen_move
 quit

@@ -4,48 +4,55 @@ set_contract 3NT
 
 set_dummy_cards 
 SA
-SK
-S4
-S3
-S2
 HA
 HK
-H3
-H2
-D6
 D5
 D4
-CQ
-
-set_declarer_cards
-S6
-S5
-H6
-H5
-H4
-DA
 D3
 D2
-CA
+CQ
 CJ
 CT
 C9
 C8
+C7
+
+set_declarer_cards
+SK
+SQ
+SJ
+HJ
+H4
+H3
+H2
+DA
+DQ
+DJ
+DT
+C3
+C2
 
 auto_set_defenders_cards
 start
 
-play C5
-play CQ
-play C2
-gen_move
-play CA
+play S9
+play SA
+play S5
+play SJ
 
 gen_move
-play CJ
+play CQ
 play CK
-play D4
-play C3
+play C2
+play C4
+
+play S2
+play SQ
+play S6
+gen_move
+play D2
+
+gen_move
 
 
 quit

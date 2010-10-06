@@ -13,24 +13,24 @@ DK
 D9
 D8
 D7
+CA
 CK
-C4
-C3
+CJ
 
 set_declarer_cards
 S3
 S2
 HA
 HK
-H4
 H3
 H2
 DA
 DQ
 DJ
 DT
-CA
-C2
+CQ
+CT
+Q9
 
 
 auto_set_defenders_cards
@@ -45,5 +45,20 @@ play S3
 play S6
 play SK
 
+gen_move
+play H8
+play H4
+gen_move
+play HA
+play H7
+
+gen_move
+play C9
+play C2
+play CA
+play C3
+
+play H9
+play H5
 gen_move
 quit

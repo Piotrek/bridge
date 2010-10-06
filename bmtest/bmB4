@@ -1,0 +1,52 @@
+set_board_size 13
+
+set_contract 4H
+
+set_dummy_cards 
+S6
+S5
+HA
+H6
+H5
+H4
+H3
+H2
+DQ
+DJ
+DT
+C3
+C2
+
+set_declarer_cards
+S4
+S3
+S2
+HQ
+HJ
+HT
+H9
+H8
+DK
+D2
+CA
+CK
+CQ
+
+auto_set_defenders_cards
+start
+
+play SK
+play S5
+play SQ
+play S2
+
+play SA
+play S6
+play SJ
+play S3
+
+play H7
+gen_move
+play HA
+
+quit

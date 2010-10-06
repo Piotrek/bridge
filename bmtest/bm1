@@ -3,49 +3,52 @@ set_board_size 13
 set_contract 3NT
 
 set_dummy_cards 
-SA
-SK
+SQ
 S4
-S3
-S2
-HA
 HK
-H3
-H2
+H5
+H4
+CK
+CJ
+C5
+C4
+DA
 D6
 D5
 D4
-CQ
 
 set_declarer_cards
-S6
-S5
-H6
-H5
-H4
-DA
+SJ
+S2
+S3
+HA
+H2
+H3
+CA
+CQ
+C3
+C2
+DK
 D3
 D2
-CA
-CJ
-CT
-C9
-C8
 
 auto_set_defenders_cards
+
 start
 
-play C5
-play CQ
-play C2
-gen_move
-play CA
+play ST
 
 gen_move
-play CJ
-play CK
-play D4
-play C3
+
+play S4
+
+play SA
+
+play S2
+
+play S6
+
+gen_move
 
 
 quit

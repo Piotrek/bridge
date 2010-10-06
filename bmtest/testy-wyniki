@@ -1,52 +1,330 @@
+------------------------------------------------------------
+------------------------------------------------------------
+
+BM4
+
+---------
+problem: atuty AKxx do JT98
+---------
+UCB ++--
+wynik: impas w pierwszym ruchu
+       jak każemy mu grać z góry, to gra z góry
+       jak każemy dojść do stołu, to drugi raz impasuje!!
+---------
+UCBtuned ++--
+wynik: gra identycznie
+---------
+
+------------------------------------------------------------
+------------------------------------------------------------
+
+BM5
+
+---------
+problem: atuty AKxxx do JT98
+---------
+UCB ++++
+wynik: gra w atuta, do króla!!
+---------
+UCBtuned +---
+wynik: gra w atuta, ale impasuje
+---------
+
+------------------------------------------------------------
+------------------------------------------------------------
+
+BM6
+
+---------
+problem: atuty się nie dzielą, ale mamy dużo fort, trzeba
+         szybko oddać na ostatniego atuta
+---------
+UCB ++++
+wynik: gra w atu!!
+---------
+UCBtuned ----
+wynik: gra bokiem (asa pik, kier ma niewiele mniej, ale i tak
+       to bardzo bardzo bardzo mało)
+---------
+
+------------------------------------------------------------
+------------------------------------------------------------
+
+BM9
+
+---------
+problem: 3NT, w kolorze wistu Jx do ATx
+---------
+UCB ++++
+wynik: małe ze stołu, as na figurę
+---------
+UCBtuned ++++
+wynik: małe ze stołu, as na figurę
+---------
+
+------------------------------------------------------------
+------------------------------------------------------------
+
+BM10
+
+---------
+problem: NT, podwójny impas (brakuje K i Q)
+---------
+UCB ++++
+wynik: podwójny impas
+---------
+UCBtuned ++++
+wynik: podwójny impas
+---------
+
+------------------------------------------------------------
+------------------------------------------------------------
+
+BM11
+
+---------
+problem: trzeba dwukrotnie puścić pika
+---------
+UCB +---
+wynik: puszcza raz
+---------
+UCBtuned +---
+wynik: puszcza raz
+---------
+
+------------------------------------------------------------
+------------------------------------------------------------
+
+BM13
+
+---------
+problem: xx do Qxx, NT, Q na jedyną szansę
+---------
+UCB ++++
+wynik: Q (chociaż ledwo ledwo)
+---------
+UCBtuned ++++
+wynik: Q (chociaż ledwo ledwo)
+---------
+
+------------------------------------------------------------
+------------------------------------------------------------
+
+BM14
+
+---------
+problem: Axx do QJTxx, NT, As i małe, bo jedno dojście
+---------
+UCB ----
+wynik: gra w kolor axxx do xxx, słabo
+---------
+UCBtuned ----
+wynik: jw
+---------
+
+------------------------------------------------------------
+------------------------------------------------------------
+
+BM15
+
+---------
+problem: KQ do Ax, bijemy asem, żeby zachować dojście do dz.
+---------
+UCB ++++
+wynik: as (bardzo wyraźna przewaga 76% : 0% !!!!!!!!)
+---------
+UCBtuned ++++
+wynik: as (wyraźna przewaga 78% : 17!)
+---------
+
+------------------------------------------------------------
+------------------------------------------------------------
+
+BM16
+
+---------
+problem: łączenie szans
+---------
+UCB ----
+wynik: K pik, a nie małe do Q
+---------
+UCBtuned ----
+wynik: K pik, a nie małe do Q
+---------
+
+------------------------------------------------------------
+------------------------------------------------------------
+
+BM17
+
+---------
+problem: NT, trzeba wyrobić 9. lewę, w najsłabszym honorowo
+         kolorze (karo)
+---------
+UCB ++++
+wynik: karo, wyraźniejsza przewaga niż w tuned
+---------
+UCBtuned ++++
+wynik: w miarę jednoznacznie karo
+---------
+
+------------------------------------------------------------
+------------------------------------------------------------
+
+BM20
+
+---------
+problem: trudny, najpierw trzeba przebić, potem dojść do stołu
+         zaimpasować atu, dojść do stołu (przejmując honor
+         honorem), zaimpasować atu
+---------
+UCB ----
+wynik: przebija i gra asa pik (ale on jest minimalnie lepszy -
+       ok 2% niż inne karty), jak każemy, to impasuje, ale
+       tylko za pierwszym razem, no i się blokuje
+---------
+UCBtuned ----
+wynik: gra tak samo, choć raz na dwa razy dochodził 9 karo
+---------
+
+------------------------------------------------------------
+------------------------------------------------------------
+
 BM21
+BM21-1
 
-problem: bijemy asem pik, atuty, karo dołem (Akxxx do xxx)
-wynik: as pik, atut, karo (był dwa razy lepszy od atuta - ???), znów atut, a potem jak oni już nie mają atuta, to niby atut, ale karo jest prawie tak samo dobre, potem się zawiesza
-------------------------------------------------------------
-BM22			+++
+---------
+problem: boczny kolor AKxxx do xxx
+---------
+UCB ++++
+wynik: małe z obu rąk, miodzio; a jak się wymusi A, to gra małe
+---------
+UCBtuned ++++
+wynik: również dobrze
+---------
 
-problem: mamy xxx do xx w kierach, trzeba przebić jednego kiera na 4pik
-wynik: gra w karo (karo ma 61%, kier 57%, inne też dużo, poza atutem), a może to i lepiej, bo jak się kiery nie dzielą, to najpierw odbieramy kara, a potem przebija
 ------------------------------------------------------------
+------------------------------------------------------------
+
+BM22
+
+---------
+problem: xxx do xx w kierach, jednego trzeba przebić
+---------
+UCB ++++
+wynik: ok
+---------
+UCBtuned ++++
+wynik: ok
+---------
+
+------------------------------------------------------------
+------------------------------------------------------------
+
 BM23
 
-problem: 3 razy puszczamy, potem w dobry kolor, potem nie impasujemy
-wynik: puścił raz, zabił asem, potem segmentation fault
+---------
+problem: NT, puszczamy trzy razy, w dobry kolor, nie impasujemy
+---------
+UCB +---
+wynik: jak niżej
+---------
+UCBtuned +---
+wynik: puścił tylko raz, ale potem zagrał w dobry kolor
+       i nie zaimpasował
+---------
+
 ------------------------------------------------------------
+------------------------------------------------------------
+
 BM24
 
+---------
 problem: gra na obustronne przebitki
-wynik: przez pierwsze pięć lew idelanie, ale potem się zawiesił :( i tak dwa razy, może 23 i 24 to błędy z testami?
+---------
+UCB ++++
+wynik: i-de-al-nie
+---------
+UCBtuned ++++
+wynik: j.w.
+---------
+
 ------------------------------------------------------------
+------------------------------------------------------------
+
 BM25
 
-problem: jedyna szansa na wygranie kontraktu to stojący król
-wynik: mały trefl miał szansę na wygranie 0.435644, jak kazaliśmy zagrć małe z ręki, to z K2 zagrał K!!
+---------
+problem: NT, jedyna szansa - stojący as
+---------
+UCB +---
+wynik: nie gra w trefla, wycenia go słabo, ale kładzie króla
+---------
+UCBtuned +++-
+wynik: trefla wycenia wysoko, kładzie asa
+---------
+
 ------------------------------------------------------------
+------------------------------------------------------------
+
 BM26
 
+---------
 problem: wyrabiamy boczny kolor, zanim oni dojdą na atuty i ściągną fortę
-wynik: źle, zaczął od ściągnięcia zatrzymania w kolorze, w którym oni wyrabiają fortę
-ale jak się go przymusi, to potem wyrzuca losera, a potem gra w atu ->
-------------------------------------------------------------
-BM27
+---------
+UCB ++--
+wynik: jak niżej, chociaż lepsze procenty na karo
+---------
+UCBtuned ++--
+wynik: sam nie wyrabia, ale jak mu każemy wyrobić, to dochodzi i wyrzuca
+---------
 
-problem: mamy Kxx do Txx, wistują D
-wynik: zabił królem, jak mu każemy puścić, to też kładzie króla
-koment: aj aj aj, ale nie miał szans :/ bo on wie, gdzie jest dama :/
 ------------------------------------------------------------
+------------------------------------------------------------
+
 BM29
 
+---------
 problem: bezdojściowe AKDxxx do xx
-wynik: gra górą (małe daje 21%, figura 51%), źle
+---------
+UCB ----
+wynik: 52% do 2% :(
+---------
+UCBtuned ----
+wynik: górą; małe daje 2%, figura 51%
+---------
+
 ------------------------------------------------------------
+------------------------------------------------------------
+
 BM30
 
+---------
 problem: Kxx do AJ sec, bijemy asem, bo K to jedyne dojście do fort
-wynik: ze stołu małe, a nie król, ale z ręki walet, potem A karo i karo, ale po wzięciu w pika :/ (odrobinkę więcej, ale karo powinno być 100%), ale potem zabija od razu kiera (dobrze!), dochodzi do stołu i zgrywa forty
+---------
+UCB +++-
+wynik: ze stołu małe, a nie król, ale z ręki walet
+       potem A karo i karo, ale po wzięciu w pika :/
+       potem zabija od razu kiera (dobrze!), dochodzi do stołu 
+       i zgrywa forty
+---------
+UCBtuned +++-
+wynik: as above
+---------
+
 ------------------------------------------------------------
+------------------------------------------------------------
+
 BM32
 
-problem: na 3NT singlową damę przejmujemy asem i gramy w ten kolor, oddając na króla
-wynik:
+---------
+problem: 3NT, singlową damę przejmujemy królem i nawracamy
+---------
+UCB ----
+wynik: nie przejmuje (14% vs 31%)
+---------
+UCBtuned ----
+wynik: nie przejmuje (3% vs 32%)
+---------
+
 ------------------------------------------------------------
